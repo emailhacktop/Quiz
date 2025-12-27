@@ -21,6 +21,7 @@ button{padding:10px 20px;font-size:16px;margin:5px}
 
 <div class="box" id="examBox" style="display:none">
 <p>⏱ زمان باقی‌مانده: <span id="timer">03:00</span></p>
+<p id="qCounter"></p>   <!-- این خط شماره سؤال را نمایش می‌دهد -->
 <h3 id="q"></h3>
 <div id="opts"></div>
 </div>
@@ -58,6 +59,7 @@ function startTimer(){
 
 function showQ(){
  if(i>=qs.length){finish();return;}
+ document.getElementById("qCounter").innerText = سؤال ${i+1} از ${qs.length};
  document.getElementById("q").innerText=qs[i].q;
  const o=shuffle([...qs[i].a]);
  document.getElementById("opts").innerHTML=o.map(x=>`<button onclick="ans('${x}')">${x}</button>`).join("<br>");
