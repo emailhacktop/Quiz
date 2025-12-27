@@ -4,11 +4,7 @@
 <meta charset="UTF-8">
 <title>Soalat_Test_School</title>
 
-<!-- بانک سوالات -->
 <script src="questions.js"></script>
-
-<!-- افکت تشویقی -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
 body{
@@ -28,49 +24,33 @@ button{
   padding:10px 20px;
   font-size:16px;
   margin:6px;
-  cursor:pointer;
-}
-#timer{
-  color:red;
-  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<!-- صفحه شروع -->
 <div class="box" id="startBox">
   <h2>آزمون آنلاین</h2>
-  <p>موضوع: تاریخ و جغرافیای ایران</p>
   <input id="name" placeholder="نام شرکت‌کننده">
   <br><br>
-  <button onclick="startExam()">شروع آزمون</button>
+  <button onclick="startExam()">شروع</button>
 </div>
 
-<!-- صفحه آزمون -->
 <div class="box" id="examBox" style="display:none">
-  <p>⏱ زمان باقی‌مانده: <span id="timer">03:00</span></p>
   <h3 id="q"></h3>
   <div id="opts"></div>
 </div>
 
-<!-- صفحه پایان -->
 <div class="box" id="endBox" style="display:none">
   <h2 id="result"></h2>
   <button onclick="location.reload()">خروج</button>
-  <p>طراح: aminsystem2000</p>
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVTHZnri3-2fi_ZMngnNqCYAASQ37k2UGtFvwrM_LORpPBfsn6DyjjALWeWgQYCrOf3g/exec";
-const TOKEN = "Amin12368secure";
-
 let qs = [];
 let i = 0;
 let score = 0;
-let time = 180;
-let timer;
 
 function shuffle(arr){
   return arr.sort(()=>Math.random()-0.5);
@@ -83,7 +63,6 @@ function startExam(){
     return;
   }
 
-  // 🔹 انتخاب هوشمند سوالات
   qs = shuffle(HISTORY).slice(0,4)
         .concat(shuffle(GEOGRAPHY).slice(0,4))
         .concat(shuffle(MIXED).slice(0,2));
@@ -94,21 +73,6 @@ function startExam(){
   document.getElementById("examBox").style.display="block";
 
   showQ();
-  startTimer();
-}
-
-function startTimer(){
-  timer = setInterval(()=>{
-    let m = Math.floor(time/60);
-    let s = time % 60;
-    document.getElementById("timer").innerText =
-      ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')};
-    time--;
-    if(time < 0){
-      clearInterval(timer);
-      finish();
-    }
-  },1000);
 }
 
 function showQ(){
@@ -133,25 +97,10 @@ function answer(x){
 }
 
 function finish(){
-  clearInterval(timer);
   document.getElementById("examBox").style.display="none";
   document.getElementById("endBox").style.display="block";
-
   document.getElementById("result").innerText =
-    نمره شما: ${score} از 10;
-
-  if(score === 10){
-    confetti({spread:180,particleCount:150});
-  }
-
-  fetch(WEB_APP_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      token:TOKEN,
-      name:document.getElementById("name").value,
-      score:score
-    })
-  });
+    "نمره شما: " + score + " از 10";
 }
 </script>
 
