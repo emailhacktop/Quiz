@@ -93,6 +93,7 @@ function finish(){
   document.getElementById("endBox").style.display="block";
   document.getElementById("result").innerText=شرکت‌کننده: ${userName}\nنمره شما: ${score} از 10;
 
+  // جدول بررسی پاسخ‌ها
   let t=<table><tr><th>سؤال</th><th>پاسخ شما</th><th>پاسخ صحیح</th></tr>;
   answersLog.forEach(a=>{
     t+=<tr class="${a.ok?'correct':'wrong'}"><td>${a.q}</td><td>${a.user}</td><td>${a.correct}</td></tr>;
