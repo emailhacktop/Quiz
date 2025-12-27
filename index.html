@@ -9,107 +9,69 @@
 body{font-family:tahoma;text-align:center;background:#f4f6f8}
 .box{background:#fff;padding:20px;margin:20px auto;width:90%;max-width:500px;border-radius:10px}
 button{padding:10px 20px;font-size:16px;margin:5px}
-#timer{color:red;font-weight:bold;}
-table{border-collapse:collapse;width:100%;margin-top:10px}
-th,td{border:1px solid #ccc;padding:6px;text-align:center}
-.correct{background:#d4edda;}
-.wrong{background:#f8d7da;}
 </style>
 </head>
 <body>
 
 <div class="box" id="startBox">
 <h2>آزمون آنلاین</h2>
-<p style="color:#555">معلومات عمومی – تاریخ و جغرافیای ایران</p>
-<input id="name" placeholder="نام شرکت‌کننده"><br><br>
+<input id="name" placeholder="نام شرکت کننده"><br><br>
 <button onclick="startExam()">شروع</button>
 </div>
 
 <div class="box" id="examBox" style="display:none">
-<p>⏱️ زمان باقی‌مانده: <span id="timer">03:00</span></p>
-<p id="qCounter"></p>
+<p>⏱ زمان باقی‌مانده: <span id="timer">03:00</span></p>
 <h3 id="q"></h3>
 <div id="opts"></div>
 </div>
 
 <div class="box" id="endBox" style="display:none">
 <h2 id="result"></h2>
-<div id="review"></div>
 <button onclick="location.reload()">خروج</button>
 <p>طراح: aminsystem2000</p>
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVTHZnri3-2fi_ZMngnNqCYAASQ37k2UGtFvwrM_LORpPBfsn6DyjjALWeWgQYCrOf3g/exec"; // لینک Web App گوگل
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVTHZnri3-2fi_ZMngnNqCYAASQ37k2UGtFvwrM_LORpPBfsn6DyjjALWeWgQYCrOf3g/exec";
 const TOKEN = "Amin12368secure";
 
-let qs=[], i=0, score=0, time=180, timer;
-let answersLog=[], userName="";
+let qs=[],i=0,score=0,time=180,timer;
 
 function shuffle(a){return a.sort(()=>Math.random()-0.5);}
 
 function startExam(){
-  userName=document.getElementById("name").value.trim();
-  if(!userName){alert("نام را وارد کنید");return;}
-  qs=shuffle([...QUESTIONS_BANK]).slice(0,10); // 10 سوال تصادفی
-  document.getElementById("startBox").style.display="none";
-  document.getElementById("examBox").style.display="block";
-  showQ();
-  startTimer();
+ const n=document.getElementById("name").value.trim();
+ if(!n){alert("نام را وارد کنید");return;}
+ qs=shuffle([...QUESTIONS_BANK]).slice(0,10);
+ document.getElementById("startBox").style.display="none";
+ document.getElementById("examBox").style.display="block";
+ showQ(); startTimer();
 }
 
 function startTimer(){
-  timer=setInterval(()=>{
-    let m=Math.floor(time/60), s=time%60;
-    document.getElementById("timer").innerText=${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')};
-    time--;
-    if(time<0){clearInterval(timer);finish();}
-  },1000);
+ timer=setInterval(()=>{
+  let m=Math.floor(time/60),s=time%60;
+  document.getElementById("timer").innerText=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  time--; if(time<0){clearInterval(timer);finish();}
+ },1000);
 }
 
 function showQ(){
-  if(i>=qs.length){finish();return;}
-  document.getElementById("qCounter").innerText=سؤال ${i+1} از ${qs.length};
-  document.getElementById("q").innerText=qs[i].q;
-  const o=shuffle([...qs[i].a]);
-  document.getElementById("opts").innerHTML=o.map(x=><button onclick="ans('${x}')">${x}</button>).join("<br>");
+ if(i>=qs.length){finish();return;}
+ document.getElementById("q").innerText=qs[i].q;
+ const o=shuffle([...qs[i].a]);
+ document.getElementById("opts").innerHTML=o.map(x=>`<button onclick="ans('${x}')">${x}</button>`).join("<br>");
 }
 
-function ans(x){
-  answersLog.push({
-    q:qs[i].q,
-    user:x,
-    correct:qs[i].c,
-    ok:x===qs[i].c
-  });
-  if(x===qs[i].c) score++;
-  i++;
-  showQ();
-}
+function ans(x){ if(x===qs[i].c) score++; i++; showQ(); }
 
 function finish(){
-  clearInterval(timer);
-  document.getElementById("examBox").style.display="none";
-  document.getElementById("endBox").style.display="block";
-  document.getElementById("result").innerText=شرکت‌کننده: ${userName}\nنمره شما: ${score} از 10;
-
-  // جدول بررسی پاسخ‌ها
-  let t=<table><tr><th>سؤال</th><th>پاسخ شما</th><th>پاسخ صحیح</th></tr>;
-  answersLog.forEach(a=>{
-    t+=<tr class="${a.ok?'correct':'wrong'}"><td>${a.q}</td><td>${a.user}</td><td>${a.correct}</td></tr>;
-  });
-  t+="</table>";
-  document.getElementById("review").innerHTML=t;
-
-  if(score===10){
-    confetti({particleCount:200,spread:120,origin:{y:0.6}});
-  }
-
-  // ارسال نمره به Google Sheet
-  fetch(WEB_APP_URL,{
-    method:"POST",
-    body:JSON.stringify({token:TOKEN,name:userName,score:score})
-  });
+ clearInterval(timer);
+ document.getElementById("examBox").style.display="none";
+ document.getElementById("endBox").style.display="block";
+ document.getElementById("result").innerText=`نمره شما: ${score} از 10`;
+ if(score===10) confetti();
+ fetch(WEB_APP_URL,{method:"POST",body:JSON.stringify({token:TOKEN,name:document.getElementById("name").value,score:score})});
 }
 </script>
 
