@@ -2,74 +2,92 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>آزمون آنلاین</title>
+<title>Soalat_Test_School</title>
+<script src="questions.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
 body{font-family:tahoma;text-align:center;background:#f4f6f8}
 .box{background:#fff;padding:20px;margin:20px auto;width:90%;max-width:500px;border-radius:10px}
 button{padding:10px 20px;font-size:16px;margin:5px}
 #timer{color:red;font-weight:bold;}
+table{border-collapse:collapse;width:100%;margin-top:10px}
+th,td{border:1px solid #ccc;padding:6px;text-align:center}
+.correct{background:#d4edda;}
+.wrong{background:#f8d7da;}
 </style>
 </head>
 <body>
 
 <div class="box" id="startBox">
 <h2>آزمون آنلاین</h2>
+<p style="color:#555">معلومات عمومی – تاریخ و جغرافیای ایران</p>
 <input id="name" placeholder="نام شرکت کننده"><br><br>
 <button onclick="startExam()">شروع</button>
 </div>
 
 <div class="box" id="examBox" style="display:none">
 <p>⏱️ زمان باقی‌مانده: <span id="timer">03:00</span></p>
-<h3 id="qnum"></h3>
+<p id="qCounter"></p> <!-- شماره سوال -->
 <h3 id="q"></h3>
 <div id="opts"></div>
 </div>
 
 <div class="box" id="endBox" style="display:none">
 <h2 id="result"></h2>
+<div id="review"></div>
 <button onclick="location.reload()">خروج</button>
 <p>طراح: aminsystem2000</p>
 </div>
 
 <script>
-let QUESTIONS = [
-  {q:"طولانی‌ترین رود ایران کدام است؟", a:["کارون","کرخه","اروند","سفیدرود"], c:"کارون"}
-];
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVTHZnri3-2fi_ZMngnNqCYAASQ37k2UGtFvwrM_LORpPBfsn6DyjjALWeWgQYCrOf3g/exec"; // لینک Web App گوگل
+const TOKEN = "Amin12368secure";
 
-let i=0, score=0, timer, time=180;
+let qs=[], i=0, score=0, time=180, timer;
+let answersLog=[], userName="";
 
 function shuffle(a){return a.sort(()=>Math.random()-0.5);}
 
 function startExam(){
-  let n = document.getElementById("name").value.trim();
-  if(!n){alert("نام را وارد کنید"); return;}
+  userName=document.getElementById("name").value.trim();
+  if(!userName){alert("نام را وارد کنید");return;}
+  qs=shuffle([...QUESTIONS_BANK]).slice(0,10); // 10 سوال تصادفی
   document.getElementById("startBox").style.display="none";
   document.getElementById("examBox").style.display="block";
-  QUESTIONS = shuffle(QUESTIONS);
   showQ();
   startTimer();
 }
 
 function startTimer(){
-  timer = setInterval(()=>{
+  timer=setInterval(()=>{
     let m=Math.floor(time/60), s=time%60;
-    document.getElementById("timer").innerText = ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')};
+    document.getElementById("timer").innerText = (m<10?"0"+m:m) + ":" + (s<10?"0"+s:s);
     time--;
-    if(time<0){clearInterval(timer); finish();}
+    if(time<0){clearInterval(timer);finish();}
   },1000);
 }
 
 function showQ(){
-  if(i>=QUESTIONS.length){finish(); return;}
-  document.getElementById("qnum").innerText = سوال ${i+1} از ${QUESTIONS.length};
-  document.getElementById("q").innerText = QUESTIONS[i].q;
-  let opts = shuffle([...QUESTIONS[i].a]);
-  document.getElementById("opts").innerHTML = opts.map(x=><button onclick="ans('${x}')">${x}</button>).join("<br>");
+  if(i>=qs.length){finish(); return;}
+  document.getElementById("qCounter").innerText = "سؤال " + (i+1) + " از " + qs.length;
+  document.getElementById("q").innerText = qs[i].q;
+
+  // ساخت گزینه‌ها به روش قدیمی که کار می‌کند
+  var optsHTML = "";
+  for(var j=0; j<qs[i].a.length; j++){
+    optsHTML += '<button onclick="ans(\'' + qs[i].a[j] + '\')">' + qs[i].a[j] + '</button><br>';
+  }
+  document.getElementById("opts").innerHTML = optsHTML;
 }
 
 function ans(x){
-  if(x === QUESTIONS[i].c) score++;
+  answersLog.push({
+    q:qs[i].q,
+    user:x,
+    correct:qs[i].c,
+    ok:x===qs[i].c
+  });
+  if(x===qs[i].c) score++;
   i++;
   showQ();
 }
@@ -78,8 +96,26 @@ function finish(){
   clearInterval(timer);
   document.getElementById("examBox").style.display="none";
   document.getElementById("endBox").style.display="block";
-  document.getElementById("result").innerText = نام شرکت‌کننده: ${document.getElementById("name").value}\nنمره شما: ${score} از ${QUESTIONS.length};
-  if(score === QUESTIONS.length) confetti();
+  document.getElementById("result").innerText = "شرکت‌کننده: " + userName + "\nنمره شما: " + score + " از 10";
+
+  // جدول بررسی پاسخ‌ها
+  var t = "<table><tr><th>سؤال</th><th>پاسخ شما</th><th>پاسخ صحیح</th></tr>";
+  for(var k=0;k<answersLog.length;k++){
+    var a = answersLog[k];
+    t += '<tr class="' + (a.ok?'correct':'wrong') + '"><td>' + a.q + '</td><td>' + a.user + '</td><td>' + a.correct + '</td></tr>';
+  }
+  t += "</table>";
+  document.getElementById("review").innerHTML = t;
+
+  if(score===10){
+    confetti({particleCount:200,spread:120,origin:{y:0.6}});
+  }
+
+  // ارسال نمره به Google Sheet
+  fetch(WEB_APP_URL,{
+    method:"POST",
+    body:JSON.stringify({token:TOKEN,name:userName,score:score})
+  });
 }
 </script>
 
