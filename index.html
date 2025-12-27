@@ -2,121 +2,74 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>Soalat_Test_School</title>
+<title>آزمون آنلاین</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
-body{
-  font-family:tahoma;
-  background:#f4f6f8;
-  text-align:center;
-}
-.box{
-  background:#fff;
-  padding:20px;
-  margin:20px auto;
-  width:90%;
-  max-width:500px;
-  border-radius:10px;
-}
-button{
-  padding:10px 20px;
-  font-size:16px;
-  margin:6px;
-}
-#timer { color:red; font-weight:bold; }
+body{font-family:tahoma;text-align:center;background:#f4f6f8}
+.box{background:#fff;padding:20px;margin:20px auto;width:90%;max-width:500px;border-radius:10px}
+button{padding:10px 20px;font-size:16px;margin:5px}
+#timer{color:red;font-weight:bold;}
 </style>
 </head>
 <body>
 
 <div class="box" id="startBox">
-  <h2>آزمون آنلاین</h2>
-  <p>موضوع: تاریخ و جغرافیای ایران</p>
-  <input id="name" placeholder="نام شرکت‌کننده">
-  <br><br>
-  <button onclick="startExam()">شروع</button>
+<h2>آزمون آنلاین</h2>
+<input id="name" placeholder="نام شرکت کننده"><br><br>
+<button onclick="startExam()">شروع</button>
 </div>
 
 <div class="box" id="examBox" style="display:none">
-  <p>سوال <span id="qNum">1</span> از 10</p>
-  <p>⏱️ زمان باقی‌مانده: <span id="timer">03:00</span></p>
-  <h3 id="q"></h3>
-  <div id="opts"></div>
+<p>⏱️ زمان باقی‌مانده: <span id="timer">03:00</span></p>
+<h3 id="qnum"></h3>
+<h3 id="q"></h3>
+<div id="opts"></div>
 </div>
 
 <div class="box" id="endBox" style="display:none">
-  <h2 id="result"></h2>
-  <button onclick="location.reload()">خروج</button>
-  <p>طراح: aminsystem2000</p>
+<h2 id="result"></h2>
+<button onclick="location.reload()">خروج</button>
+<p>طراح: aminsystem2000</p>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
 <script>
-// 🔹 داده‌های آزمون داخل همان فایل
-const HISTORY = [
-  { q:"پایتخت امپراتوری هخامنشی کجا بود؟", a:["پرسپولیس","بابل","سارد","اکباتان"], c:"پرسپولیس" },
-  { q:"کدام شاه ساسانی آتشکده آذرگشسب را ساخت؟", a:["خسرو انوشیروان","اردشیر بابکان","بهرام گور","شاپور دوم"], c:"خسرو انوشیروان" },
-  { q:"انقلاب اسلامی ایران در چه سالی رخ داد؟", a:["۱۳۵۷","۱۳۴۲","۱۳۲۰","۱۳۰۵"], c:"۱۳۵۷" },
-  { q:"کوروش کبیر چه امپراتوری را بنیان گذاشت؟", a:["هخامنشی","ساسانی","اشکانی","صفوی"], c:"هخامنشی" }
+let QUESTIONS = [
+  {q:"طولانی‌ترین رود ایران کدام است؟", a:["کارون","کرخه","اروند","سفیدرود"], c:"کارون"}
 ];
 
-const GEOGRAPHY = [
-  { q:"بزرگ‌ترین استان ایران کدام است؟", a:["سیستان و بلوچستان","کرمان","خراسان رضوی","اصفهان"], c:"سیستان و بلوچستان" },
-  { q:"رود کارون از کجا سرچشمه می‌گیرد؟", a:["زاگرس","البرز","کویر لوت","دشت کویر"], c:"زاگرس" },
-  { q:"شهر تبریز مرکز کدام استان است؟", a:["آذربایجان شرقی","آذربایجان غربی","اردبیل","زنجان"], c:"آذربایجان شرقی" },
-  { q:"دریاچه ارومیه در کدام استان است؟", a:["آذربایجان غربی","کردستان","همدان","کرمانشاه"], c:"آذربایجان غربی" }
-];
+let i=0, score=0, timer, time=180;
 
-const MIXED = [
-  { q:"شهر شوش در کدام استان کنونی ایران قرار دارد؟", a:["ایلام","خوزستان","لرستان","بوشهر"], c:"خوزستان" },
-  { q:"راه ابریشم چه نقشی برای ایران تاریخی داشت؟", a:["صرفاً نظامی","تجاری و فرهنگی","کشاورزی","مذهبی"], c:"تجاری و فرهنگی" }
-];
-
-// 🔹 متغیرهای کنترل
-let qs=[],i=0,score=0,time=180,timer;
-
-// 🔹 توابع
-function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
+function shuffle(a){return a.sort(()=>Math.random()-0.5);}
 
 function startExam(){
-  const n=document.getElementById("name").value.trim();
-  if(!n){ alert("نام را وارد کنید"); return; }
-
-  qs=shuffle(HISTORY).slice(0,4)
-     .concat(shuffle(GEOGRAPHY).slice(0,4))
-     .concat(shuffle(MIXED).slice(0,2));
-  qs=shuffle(qs);
-
+  let n = document.getElementById("name").value.trim();
+  if(!n){alert("نام را وارد کنید"); return;}
   document.getElementById("startBox").style.display="none";
   document.getElementById("examBox").style.display="block";
-
-  i=0; score=0; time=180;
+  QUESTIONS = shuffle(QUESTIONS);
   showQ();
   startTimer();
 }
 
 function startTimer(){
-  timer=setInterval(()=>{
+  timer = setInterval(()=>{
     let m=Math.floor(time/60), s=time%60;
     document.getElementById("timer").innerText = ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')};
     time--;
-    if(time<0){ clearInterval(timer); finish(); }
+    if(time<0){clearInterval(timer); finish();}
   },1000);
 }
 
 function showQ(){
-  if(i>=qs.length){ finish(); return; }
-
-  document.getElementById("qNum").innerText = i+1;
-  document.getElementById("q").innerText = qs[i].q;
-
-  const opts=shuffle([...qs[i].a]);
-  document.getElementById("opts").innerHTML = opts.map(o =>
-    <button onclick="answer('${o}')">${o}</button>
-  ).join("<br>");
+  if(i>=QUESTIONS.length){finish(); return;}
+  document.getElementById("qnum").innerText = سوال ${i+1} از ${QUESTIONS.length};
+  document.getElementById("q").innerText = QUESTIONS[i].q;
+  let opts = shuffle([...QUESTIONS[i].a]);
+  document.getElementById("opts").innerHTML = opts.map(x=><button onclick="ans('${x}')">${x}</button>).join("<br>");
 }
 
-function answer(x){
-  if(x===qs[i].c) score++;
+function ans(x){
+  if(x === QUESTIONS[i].c) score++;
   i++;
   showQ();
 }
@@ -125,8 +78,8 @@ function finish(){
   clearInterval(timer);
   document.getElementById("examBox").style.display="none";
   document.getElementById("endBox").style.display="block";
-  document.getElementById("result").innerText = نمره شما: ${score} از 10;
-  if(score===10) confetti();
+  document.getElementById("result").innerText = نام شرکت‌کننده: ${document.getElementById("name").value}\nنمره شما: ${score} از ${QUESTIONS.length};
+  if(score === QUESTIONS.length) confetti();
 }
 </script>
 
