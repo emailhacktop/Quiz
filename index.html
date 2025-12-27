@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <title>Soalat_Test_School</title>
 
-<script src="questions.js"></script>
+<!-- بانک سوالات -->
+<script src="./questions.js"></script>
 
 <style>
 body{
@@ -30,23 +31,29 @@ button{
 
 <body>
 
+<!-- صفحه شروع -->
 <div class="box" id="startBox">
   <h2>آزمون آنلاین</h2>
+  <p>موضوع: تاریخ و جغرافیای ایران</p>
   <input id="name" placeholder="نام شرکت‌کننده">
   <br><br>
   <button onclick="startExam()">شروع</button>
 </div>
 
+<!-- صفحه آزمون -->
 <div class="box" id="examBox" style="display:none">
   <h3 id="q"></h3>
   <div id="opts"></div>
 </div>
 
+<!-- صفحه پایان -->
 <div class="box" id="endBox" style="display:none">
   <h2 id="result"></h2>
   <button onclick="location.reload()">خروج</button>
+  <p>طراح: aminsystem2000</p>
 </div>
 
+<!-- 🔴 اسکریپت دقیقاً اینجاست (خیلی مهم) -->
 <script>
 let qs = [];
 let i = 0;
@@ -57,8 +64,9 @@ function shuffle(arr){
 }
 
 function startExam(){
-  alert(typeof HISTORY);
-  
+  // تست اتصال دکمه
+  alert("startExam اجرا شد");
+
   const n = document.getElementById("name").value.trim();
   if(!n){
     alert("نام را وارد کنید");
@@ -105,8 +113,6 @@ function finish(){
     "نمره شما: " + score + " از 10";
 }
 </script>
-<script>
-alert("JS وصل شد");
-</script>
+
 </body>
 </html>
