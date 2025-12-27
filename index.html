@@ -3,10 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Soalat_Test_School</title>
-
-<!-- بانک سوالات -->
-<script src="./questions.js"></script>
-
 <style>
 body{
   font-family:tahoma;
@@ -26,12 +22,11 @@ button{
   font-size:16px;
   margin:6px;
 }
+#timer { color:red; font-weight:bold; }
 </style>
 </head>
-
 <body>
 
-<!-- صفحه شروع -->
 <div class="box" id="startBox">
   <h2>آزمون آنلاین</h2>
   <p>موضوع: تاریخ و جغرافیای ایران</p>
@@ -40,77 +35,98 @@ button{
   <button onclick="startExam()">شروع</button>
 </div>
 
-<!-- صفحه آزمون -->
 <div class="box" id="examBox" style="display:none">
+  <p>سوال <span id="qNum">1</span> از 10</p>
+  <p>⏱️ زمان باقی‌مانده: <span id="timer">03:00</span></p>
   <h3 id="q"></h3>
   <div id="opts"></div>
 </div>
 
-<!-- صفحه پایان -->
 <div class="box" id="endBox" style="display:none">
   <h2 id="result"></h2>
   <button onclick="location.reload()">خروج</button>
   <p>طراح: aminsystem2000</p>
 </div>
 
-<!-- 🔴 اسکریپت دقیقاً اینجاست (خیلی مهم) -->
-<script>
-let qs = [];
-let i = 0;
-let score = 0;
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-function shuffle(arr){
-  return arr.sort(()=>Math.random()-0.5);
-}
+<script>
+// 🔹 داده‌های آزمون داخل همان فایل
+const HISTORY = [
+  { q:"پایتخت امپراتوری هخامنشی کجا بود؟", a:["پرسپولیس","بابل","سارد","اکباتان"], c:"پرسپولیس" },
+  { q:"کدام شاه ساسانی آتشکده آذرگشسب را ساخت؟", a:["خسرو انوشیروان","اردشیر بابکان","بهرام گور","شاپور دوم"], c:"خسرو انوشیروان" },
+  { q:"انقلاب اسلامی ایران در چه سالی رخ داد؟", a:["۱۳۵۷","۱۳۴۲","۱۳۲۰","۱۳۰۵"], c:"۱۳۵۷" },
+  { q:"کوروش کبیر چه امپراتوری را بنیان گذاشت؟", a:["هخامنشی","ساسانی","اشکانی","صفوی"], c:"هخامنشی" }
+];
+
+const GEOGRAPHY = [
+  { q:"بزرگ‌ترین استان ایران کدام است؟", a:["سیستان و بلوچستان","کرمان","خراسان رضوی","اصفهان"], c:"سیستان و بلوچستان" },
+  { q:"رود کارون از کجا سرچشمه می‌گیرد؟", a:["زاگرس","البرز","کویر لوت","دشت کویر"], c:"زاگرس" },
+  { q:"شهر تبریز مرکز کدام استان است؟", a:["آذربایجان شرقی","آذربایجان غربی","اردبیل","زنجان"], c:"آذربایجان شرقی" },
+  { q:"دریاچه ارومیه در کدام استان است؟", a:["آذربایجان غربی","کردستان","همدان","کرمانشاه"], c:"آذربایجان غربی" }
+];
+
+const MIXED = [
+  { q:"شهر شوش در کدام استان کنونی ایران قرار دارد؟", a:["ایلام","خوزستان","لرستان","بوشهر"], c:"خوزستان" },
+  { q:"راه ابریشم چه نقشی برای ایران تاریخی داشت؟", a:["صرفاً نظامی","تجاری و فرهنگی","کشاورزی","مذهبی"], c:"تجاری و فرهنگی" }
+];
+
+// 🔹 متغیرهای کنترل
+let qs=[],i=0,score=0,time=180,timer;
+
+// 🔹 توابع
+function shuffle(a){ return a.sort(()=>Math.random()-0.5); }
 
 function startExam(){
-  // تست اتصال دکمه
-  alert("startExam اجرا شد");
+  const n=document.getElementById("name").value.trim();
+  if(!n){ alert("نام را وارد کنید"); return; }
 
-  const n = document.getElementById("name").value.trim();
-  if(!n){
-    alert("نام را وارد کنید");
-    return;
-  }
-
-  qs = shuffle(HISTORY).slice(0,4)
-        .concat(shuffle(GEOGRAPHY).slice(0,4))
-        .concat(shuffle(MIXED).slice(0,2));
-
-  qs = shuffle(qs);
+  qs=shuffle(HISTORY).slice(0,4)
+     .concat(shuffle(GEOGRAPHY).slice(0,4))
+     .concat(shuffle(MIXED).slice(0,2));
+  qs=shuffle(qs);
 
   document.getElementById("startBox").style.display="none";
   document.getElementById("examBox").style.display="block";
 
+  i=0; score=0; time=180;
   showQ();
+  startTimer();
+}
+
+function startTimer(){
+  timer=setInterval(()=>{
+    let m=Math.floor(time/60), s=time%60;
+    document.getElementById("timer").innerText = ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')};
+    time--;
+    if(time<0){ clearInterval(timer); finish(); }
+  },1000);
 }
 
 function showQ(){
-  if(i >= qs.length){
-    finish();
-    return;
-  }
+  if(i>=qs.length){ finish(); return; }
 
+  document.getElementById("qNum").innerText = i+1;
   document.getElementById("q").innerText = qs[i].q;
 
-  const options = shuffle([...qs[i].a]);
-  document.getElementById("opts").innerHTML =
-    options.map(o =>
-      <button onclick="answer('${o}')">${o}</button>
-    ).join("<br>");
+  const opts=shuffle([...qs[i].a]);
+  document.getElementById("opts").innerHTML = opts.map(o =>
+    <button onclick="answer('${o}')">${o}</button>
+  ).join("<br>");
 }
 
 function answer(x){
-  if(x === qs[i].c) score++;
+  if(x===qs[i].c) score++;
   i++;
   showQ();
 }
 
 function finish(){
+  clearInterval(timer);
   document.getElementById("examBox").style.display="none";
   document.getElementById("endBox").style.display="block";
-  document.getElementById("result").innerText =
-    "نمره شما: " + score + " از 10";
+  document.getElementById("result").innerText = نمره شما: ${score} از 10;
+  if(score===10) confetti();
 }
 </script>
 
