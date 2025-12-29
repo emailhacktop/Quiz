@@ -86,7 +86,7 @@ th,td{border:1px solid #ccc;padding:6px}
 <script>
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyADsQshRwm_-Wxl-W-hvFfXA4IyyqAPNK9FPzz32XXJjA0Zi1vCU9obGYb9cqFEUPh/exec";
 
-// تعریف همه المنت‌ها (اینجا ایراد اصلی رو حل کردیم!)
+// تعریف همه المنت‌ها
 const startBox = document.getElementById("startBox");
 const examBox = document.getElementById("examBox");
 const endBox = document.getElementById("endBox");
@@ -98,7 +98,7 @@ const q = document.getElementById("q");
 const opts = document.getElementById("opts");
 const result = document.getElementById("result");
 const review = document.getElementById("review");
-const nameInput = document.getElementById("name"); // برای ورودی نام
+const nameInput = document.getElementById("name");
 
 let qs = [], i = 0, score = 0, time = 180, timer;
 let answersLog = [], userName = "";
@@ -115,7 +115,7 @@ function selectQuestions() {
 
 function startExam() {
   try {
-    userName = nameInput.value.trim(); // تصحیح: از المنت استفاده کن!
+    userName = nameInput.value.trim();
     if (!userName) { alert("نام را وارد کنید"); return }
     qs = selectQuestions();
     startBox.style.display = "none";
@@ -123,7 +123,7 @@ function startExam() {
     showQ();
     startTimer();
   } catch (err) {
-    console.error("خطا در شروع آزمون:", err); // برای دیباگ
+    console.error("خطا در شروع آزمون:", err);
     alert("مشکلی پیش آمد! دوباره امتحان کنید.");
   }
 }
@@ -131,8 +131,7 @@ function startExam() {
 function startTimer() {
   timer = setInterval(() => {
     let m = Math.floor(time / 60), s = time % 60;
-    timerSpan.innerText =
-      (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+    timerSpan.innerText = (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
     time--;
     if (time < 0) { clearInterval(timer); finish() }
   }, 1000);
@@ -149,7 +148,8 @@ function showQ() {
 
   opts.innerHTML = "";
   qs[i].a.forEach(x => {
-    opts.innerHTML += `<button onclick="ans('\( {x}')"> \){x}</button>`;
+    // تغییر به کنکاتنیشن برای جلوگیری از مشکل تمپلیت
+    opts.innerHTML += '<button onclick="ans(\'' + x.replace(/'/g, "\\'") + '\')">' + x + '</button>';
   });
 }
 
@@ -227,5 +227,4 @@ function showStudy() {
 </script>
 
 </body>
-
 </html>
