@@ -84,122 +84,145 @@ th,td{border:1px solid #ccc;padding:6px}
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyADsQshRwm_-Wxl-W-hvFfXA4IyyqAPNK9FPzz32XXJjA0Zi1vCU9obGYb9cqFEUPh/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxrtpbgKxNLATREaEOhs605piCkj_wdpFhtF3B9HU_DYfcgP2f3SoajdD41CiBsNmNPSg/exec";
 
-let qs=[],i=0,score=0,time=180,timer;
-let answersLog=[],userName="";
+// تعریف همه المنت‌ها (اینجا ایراد اصلی رو حل کردیم!)
+const startBox = document.getElementById("startBox");
+const examBox = document.getElementById("examBox");
+const endBox = document.getElementById("endBox");
+const timerSpan = document.getElementById("timer");
+const qCounter = document.getElementById("qCounter");
+const qCat = document.getElementById("qCat");
+const qId = document.getElementById("qId");
+const q = document.getElementById("q");
+const opts = document.getElementById("opts");
+const result = document.getElementById("result");
+const review = document.getElementById("review");
+const nameInput = document.getElementById("name"); // برای ورودی نام
 
-function shuffle(a){return a.sort(()=>Math.random()-0.5)}
+let qs = [], i = 0, score = 0, time = 180, timer;
+let answersLog = [], userName = "";
 
-function selectQuestions(){
+function shuffle(a) { return a.sort(() => Math.random() - 0.5) }
+
+function selectQuestions() {
   return [
-    ...shuffle(HISTORY).slice(0,4),
-    ...shuffle(GEOGRAPHY).slice(0,4),
-    ...shuffle(MIXED).slice(0,2)
-  ].sort(()=>Math.random()-0.5)
+    ...shuffle(HISTORY).slice(0, 4),
+    ...shuffle(GEOGRAPHY).slice(0, 4),
+    ...shuffle(MIXED).slice(0, 2)
+  ].sort(() => Math.random() - 0.5)
 }
 
-function startExam(){
-  userName=name.value.trim();
-  if(!userName){alert("نام را وارد کنید");return}
-  qs=selectQuestions();
-  startBox.style.display="none";
-  examBox.style.display="block";
-  showQ();
-  startTimer();
+function startExam() {
+  try {
+    userName = nameInput.value.trim(); // تصحیح: از المنت استفاده کن!
+    if (!userName) { alert("نام را وارد کنید"); return }
+    qs = selectQuestions();
+    startBox.style.display = "none";
+    examBox.style.display = "block";
+    showQ();
+    startTimer();
+  } catch (err) {
+    console.error("خطا در شروع آزمون:", err); // برای دیباگ
+    alert("مشکلی پیش آمد! دوباره امتحان کنید.");
+  }
 }
 
-function startTimer(){
-  timer=setInterval(()=>{
-    let m=Math.floor(time/60),s=time%60;
-    timerSpan.innerText=
-      (m<10?"0"+m:m)+":"+(s<10?"0"+s:s);
+function startTimer() {
+  timer = setInterval(() => {
+    let m = Math.floor(time / 60), s = time % 60;
+    timerSpan.innerText =
+      (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
     time--;
-    if(time<0){clearInterval(timer);finish()}
-  },1000);
+    if (time < 0) { clearInterval(timer); finish() }
+  }, 1000);
 }
-const timerSpan=document.getElementById("timer");
 
-function showQ(){
-  if(i>=qs.length){finish();return}
+function showQ() {
+  if (i >= qs.length) { finish(); return }
 
-  qCounter.innerText=`سؤال ${i+1} از ${qs.length}`;
-  qCat.innerText=qs[i].cat;
-  qCat.className="cat-"+qs[i].cat;
-  qId.innerText="#"+qs[i].id;
-  q.innerText=qs[i].q;
+  qCounter.innerText = `سؤال ${i + 1} از ${qs.length}`;
+  qCat.innerText = qs[i].cat;
+  qCat.className = "cat-" + qs[i].cat;
+  qId.innerText = "#" + qs[i].id;
+  q.innerText = qs[i].q;
 
-  opts.innerHTML="";
-  qs[i].a.forEach(x=>{
-    opts.innerHTML+=`<button onclick="ans('${x}')">${x}</button>`;
+  opts.innerHTML = "";
+  qs[i].a.forEach(x => {
+    opts.innerHTML += `<button onclick="ans('\( {x}')"> \){x}</button>`;
   });
 }
 
-function ans(x){
+function ans(x) {
   answersLog.push({
-    q:qs[i].q,user:x,correct:qs[i].c,ok:x===qs[i].c
+    q: qs[i].q, user: x, correct: qs[i].c, ok: x === qs[i].c
   });
-  if(x===qs[i].c)score++;
-  i++;showQ();
+  if (x === qs[i].c) score++;
+  i++; showQ();
 }
 
-function finish(){
-  clearInterval(timer);
-  examBox.style.display="none";
-  endBox.style.display="block";
+function finish() {
+  try {
+    clearInterval(timer);
+    examBox.style.display = "none";
+    endBox.style.display = "block";
 
-  result.innerText=`${userName}\nنمره: ${score} از 10`;
+    result.innerText = `${userName}\nنمره: ${score} از 10`;
 
-  let t="<table><tr><th>سؤال</th><th>پاسخ شما</th><th>پاسخ صحیح</th></tr>";
-  answersLog.forEach(a=>{
-    t+=`<tr class="${a.ok?'correct':'wrong'}">
-      <td>${a.q}</td><td>${a.user}</td><td>${a.correct}</td></tr>`;
-  });
-  review.innerHTML=t+"</table>";
+    let t = "<table><tr><th>سؤال</th><th>پاسخ شما</th><th>پاسخ صحیح</th></tr>";
+    answersLog.forEach(a => {
+      t += `<tr class="${a.ok ? 'correct' : 'wrong'}">
+        <td>\( {a.q}</td><td> \){a.user}</td><td>${a.correct}</td></tr>`;
+    });
+    review.innerHTML = t + "</table>";
 
-  if(score===10)confetti({particleCount:200,spread:120});
+    if (score === 10) confetti({ particleCount: 200, spread: 120 });
 
-  fetch(WEB_APP_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"examResult",
-      name:userName,
-      score:score
-    })
-  });
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "examResult",
+        name: userName,
+        score: score
+      })
+    });
+  } catch (err) {
+    console.error("خطا در پایان آزمون:", err);
+    alert("مشکلی در ثبت نتیجه پیش آمد!");
+  }
 }
 
 /* ====== مطالعه امن ====== */
-function openStudy(){
-  const u=prompt("نام کاربری");
-  const p=prompt("رمز");
+function openStudy() {
+  const u = prompt("نام کاربری");
+  const p = prompt("رمز");
 
-  fetch(WEB_APP_URL,{
-    method:"POST",
-    body:JSON.stringify({
-      action:"loginStudy",
-      username:u,
-      password:p
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "loginStudy",
+      username: u,
+      password: p
     })
   })
-  .then(r=>r.json())
-  .then(d=>{
-    if(!d.ok){alert("دسترسی غیرمجاز");return}
+  .then(r => r.json())
+  .then(d => {
+    if (!d.ok) { alert("دسترسی غیرمجاز"); return }
     showStudy();
   });
 }
 
-function showStudy(){
-  startBox.style.display="none";
-  let html="<div class='box'><h3>📘 مرور سوالات</h3>";
-  ALL_QUESTIONS.forEach(q=>{
-    html+=`
+function showStudy() {
+  startBox.style.display = "none";
+  let html = "<div class='box'><h3>📘 مرور سوالات</h3>";
+  ALL_QUESTIONS.forEach(q => {
+    html += `
       <p class="cat-${q.cat}">
       <b>${q.id} – ${q.q}</b><br>
       ✅ ${q.c}</p><hr>`;
   });
-  html+=`<button onclick="location.reload()">بازگشت</button></div>`;
-  document.body.insertAdjacentHTML("beforeend",html);
+  html += `<button onclick="location.reload()">بازگشت</button></div>`;
+  document.body.insertAdjacentHTML("beforeend", html);
 }
 </script>
 
