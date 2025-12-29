@@ -3,126 +3,205 @@
 <head>
 <meta charset="UTF-8">
 <title>آزمون آنلاین</title>
+
 <script src="questions.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 <style>
-body{font-family:tahoma;background:#f4f6f8;direction:rtl;text-align:center}
-.box{background:#fff;padding:20px;margin:20px auto;width:90%;max-width:520px;border-radius:12px;box-shadow:0 5px 15px rgba(0,0,0,.1)}
-input{padding:10px;width:85%;font-size:15px}
-button{padding:12px;font-size:15px;margin:6px;width:90%;border:none;border-radius:8px;background:linear-gradient(135deg,#4e73df,#1cc88a);color:#fff;cursor:pointer}
+body{
+  font-family:tahoma;
+  background:#f4f6f8;
+  direction:rtl;
+  text-align:center
+}
+.box{
+  background:#fff;
+  padding:20px;
+  margin:20px auto;
+  width:90%;
+  max-width:520px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,.1)
+}
+button{
+  padding:12px;
+  font-size:15px;
+  margin:6px;
+  width:90%;
+  border:none;
+  border-radius:8px;
+  background:linear-gradient(135deg,#4e73df,#1cc88a);
+  color:#fff;
+  cursor:pointer
+}
 button:hover{opacity:.9}
 #timer{color:red;font-weight:bold}
-.qMeta{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+
+.qMeta{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  margin-bottom:8px
+}
 .cat-تاریخ{color:#6f42c1}
 .cat-جغرافیا{color:#198754}
 .cat-ترکیبی{color:#fd7e14}
+
 table{width:100%;border-collapse:collapse;margin-top:15px}
 th,td{border:1px solid #ccc;padding:6px}
 .correct{background:#d4edda}
 .wrong{background:#f8d7da}
 </style>
 </head>
+
 <body>
 
 <div class="box" id="startBox">
-<h2>آزمون آنلاین</h2>
-<p>تاریخ و جغرافیای ایران</p>
-<input id="name" placeholder="نام شرکت‌کننده"><br><br>
-<button onclick="startExam()">📝 شروع آزمون</button>
-<button onclick="openStudy()">📘 مرور سوالات</button>
+  <h2>آزمون آنلاین</h2>
+  <p>تاریخ و جغرافیای ایران</p>
+  <input id="name" placeholder="نام شرکت‌کننده"><br><br>
+  <button onclick="startExam()">📝 شروع آزمون</button>
+  <button onclick="openStudy()">📘 مرور سوالات</button>
 </div>
 
 <div class="box" id="examBox" style="display:none">
-<p>⏱️ زمان باقی‌مانده: <span id="timer">03:00</span></p>
-<p id="qCounter"></p>
-<div class="qMeta">
-<span id="qCat"></span>
-<span id="qId"></span>
-</div>
-<h3 id="q"></h3>
-<div id="opts"></div>
+  <p>⏱️ زمان باقی‌مانده: <span id="timer">03:00</span></p>
+  <p id="qCounter"></p>
+
+  <div class="qMeta">
+    <span id="qCat"></span>
+    <span id="qId"></span>
+  </div>
+
+  <h3 id="q"></h3>
+  <div id="opts"></div>
 </div>
 
 <div class="box" id="endBox" style="display:none">
-<h2 id="result"></h2>
-<div id="review"></div>
-<button onclick="location.reload()">خروج</button>
+  <h2 id="result"></h2>
+  <div id="review"></div>
+  <button onclick="location.reload()">خروج</button>
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyw2n_eKxV2TelBRGj050L2db0EzqltpcuW2-MMMEJo1LAXW0P1UpJ0aNcySt7ej_eV/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyADsQshRwm_-Wxl-W-hvFfXA4IyyqAPNK9FPzz32XXJjA0Zi1vCU9obGYb9cqFEUPh/exec";
 
 let qs=[],i=0,score=0,time=180,timer;
 let answersLog=[],userName="";
 
-function shuffle(a){return [...a].sort(()=>Math.random()-0.5);}
-function selectQuestions(){return [...shuffle(HISTORY).slice(0,4),...shuffle(GEOGRAPHY).slice(0,4),...shuffle(MIXED).slice(0,2)].sort(()=>Math.random()-0.5);}
+function shuffle(a){return a.sort(()=>Math.random()-0.5)}
+
+function selectQuestions(){
+  return [
+    ...shuffle(HISTORY).slice(0,4),
+    ...shuffle(GEOGRAPHY).slice(0,4),
+    ...shuffle(MIXED).slice(0,2)
+  ].sort(()=>Math.random()-0.5)
+}
 
 function startExam(){
-  userName=document.getElementById("name").value.trim();
-  if(!userName){alert("نام را وارد کنید");return;}
-  qs=selectQuestions();i=0;score=0;answersLog=[];time=180;
-  document.getElementById("startBox").style.display="none";
-  document.getElementById("examBox").style.display="block";
-  showQ();startTimer();
+  userName=name.value.trim();
+  if(!userName){alert("نام را وارد کنید");return}
+  qs=selectQuestions();
+  startBox.style.display="none";
+  examBox.style.display="block";
+  showQ();
+  startTimer();
 }
 
 function startTimer(){
   timer=setInterval(()=>{
     let m=Math.floor(time/60),s=time%60;
-    document.getElementById("timer").innerText=(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
-    time--;if(time<0){clearInterval(timer);finish();}
+    timerSpan.innerText=
+      (m<10?"0"+m:m)+":"+(s<10?"0"+s:s);
+    time--;
+    if(time<0){clearInterval(timer);finish()}
   },1000);
 }
+const timerSpan=document.getElementById("timer");
 
 function showQ(){
-  if(i>=qs.length){finish();return;}
-  document.getElementById("qCounter").innerText=`سؤال ${i+1} از ${qs.length}`;
-  document.getElementById("qCat").innerText=qs[i].cat;
-  document.getElementById("qCat").className="cat-"+qs[i].cat;
-  document.getElementById("qId").innerText="#"+qs[i].id;
-  document.getElementById("q").innerText=qs[i].q;
-  let opts=document.getElementById("opts"); opts.innerHTML="";
-  qs[i].a.forEach(x=>{let b=document.createElement("button");b.innerText=x;b.onclick=()=>ans(x);opts.appendChild(b);});
+  if(i>=qs.length){finish();return}
+
+  qCounter.innerText=`سؤال ${i+1} از ${qs.length}`;
+  qCat.innerText=qs[i].cat;
+  qCat.className="cat-"+qs[i].cat;
+  qId.innerText="#"+qs[i].id;
+  q.innerText=qs[i].q;
+
+  opts.innerHTML="";
+  qs[i].a.forEach(x=>{
+    opts.innerHTML+=`<button onclick="ans('${x}')">${x}</button>`;
+  });
 }
 
 function ans(x){
-  answersLog.push({q:qs[i].q,user:x,correct:qs[i].c,ok:x===qs[i].c});
-  if(x===qs[i].c) score++;i++;showQ();
+  answersLog.push({
+    q:qs[i].q,user:x,correct:qs[i].c,ok:x===qs[i].c
+  });
+  if(x===qs[i].c)score++;
+  i++;showQ();
 }
 
 function finish(){
   clearInterval(timer);
-  document.getElementById("examBox").style.display="none";
-  document.getElementById("endBox").style.display="block";
-  document.getElementById("result").innerText=`${userName}\nنمره: ${score} از 10`;
+  examBox.style.display="none";
+  endBox.style.display="block";
+
+  result.innerText=`${userName}\nنمره: ${score} از 10`;
+
   let t="<table><tr><th>سؤال</th><th>پاسخ شما</th><th>پاسخ صحیح</th></tr>";
-  answersLog.forEach(a=>{t+=`<tr class="${a.ok?'correct':'wrong'}"><td>${a.q}</td><td>${a.user}</td><td>${a.correct}</td></tr>`;});
-  document.getElementById("review").innerHTML=t+"</table>";
+  answersLog.forEach(a=>{
+    t+=`<tr class="${a.ok?'correct':'wrong'}">
+      <td>${a.q}</td><td>${a.user}</td><td>${a.correct}</td></tr>`;
+  });
+  review.innerHTML=t+"</table>";
+
+  if(score===10)confetti({particleCount:200,spread:120});
+
   fetch(WEB_APP_URL,{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({action:"examResult",name:userName,score})
-  }).then(r=>r.json()).then(d=>{if(!d.ok)alert("خطا در ثبت نمره: "+(d.error||""));}).catch(err=>alert("خطا در ارتباط با سرور: "+err));
-  if(score===10) confetti({particleCount:200,spread:120});
+    body:JSON.stringify({
+      action:"examResult",
+      name:userName,
+      score:score
+    })
+  });
 }
 
+/* ====== مطالعه امن ====== */
 function openStudy(){
-  let u=prompt("نام کاربری"),p=prompt("رمز");if(!u||!p)return;
+  const u=prompt("نام کاربری");
+  const p=prompt("رمز");
+
   fetch(WEB_APP_URL,{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({action:"loginStudy",username:u,password:p})
-  }).then(r=>r.json()).then(d=>{if(!d.ok){alert("دسترسی غیرمجاز: "+(d.error||""));return;} showStudy();}).catch(err=>alert("خطا در ارتباط با سرور: "+err));
+    body:JSON.stringify({
+      action:"loginStudy",
+      username:u,
+      password:p
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(!d.ok){alert("دسترسی غیرمجاز");return}
+    showStudy();
+  });
 }
 
 function showStudy(){
-  document.getElementById("startBox").style.display="none";
-  let html=`<div class="box"><h3>📘 مرور سوالات</h3>`;
-  ALL_QUESTIONS.forEach(q=>{html+=`<p class="cat-${q.cat}"><b>${q.id} – ${q.q}</b><br>✅ ${q.c}</p><hr>`;});
+  startBox.style.display="none";
+  let html="<div class='box'><h3>📘 مرور سوالات</h3>";
+  ALL_QUESTIONS.forEach(q=>{
+    html+=`
+      <p class="cat-${q.cat}">
+      <b>${q.id} – ${q.q}</b><br>
+      ✅ ${q.c}</p><hr>`;
+  });
   html+=`<button onclick="location.reload()">بازگشت</button></div>`;
   document.body.insertAdjacentHTML("beforeend",html);
 }
 </script>
+
 </body>
 </html>
