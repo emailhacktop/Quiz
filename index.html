@@ -50,7 +50,7 @@ th,td{border:1px solid #ccc;padding:6px}
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwL0MlMVCW_sg9JOwbOzVUsmAaRAm4AkRi1av8xHpju9zNBf-dT5uW6DNMFuqIdd3ri/exec"; // جایگزین با URL Web App
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwL0MlMVCW_sg9JOwbOzVUsmAaRAm4AkRi1av8xHpju9zNBf-dT5uW6DNMFuqIdd3ri/exec";
 
 let qs=[],i=0,score=0,time=180,timer;
 let answersLog=[],userName="";
@@ -84,17 +84,12 @@ function showQ(){
   document.getElementById("q").innerText=qs[i].q;
   let opts=document.getElementById("opts");
   opts.innerHTML="";
-  qs[i].a.forEach(x=>{
-    let b=document.createElement("button");
-    b.innerText=x;b.onclick=()=>ans(x);
-    opts.appendChild(b);
-  });
+  qs[i].a.forEach(x=>{let b=document.createElement("button");b.innerText=x;b.onclick=()=>ans(x);opts.appendChild(b);});
 }
 
 function ans(x){
   answersLog.push({q:qs[i].q,user:x,correct:qs[i].c,ok:x===qs[i].c});
-  if(x===qs[i].c) score++;
-  i++;showQ();
+  if(x===qs[i].c) score++;i++;showQ();
 }
 
 function finish(){
@@ -119,9 +114,7 @@ function openStudy(){
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify({action:"loginStudy",username:u,password:p})
-  }).then(r=>r.json()).then(d=>{
-    if(!d.ok){alert("دسترسی غیرمجاز: "+(d.error||""));return;} showStudy();
-  }).catch(err=>alert("خطا در ارتباط با سرور: "+err));
+  }).then(r=>r.json()).then(d=>{if(!d.ok){alert("دسترسی غیرمجاز: "+(d.error||""));return;} showStudy();}).catch(err=>alert("خطا در ارتباط با سرور: "+err));
 }
 
 function showStudy(){
@@ -133,5 +126,4 @@ function showStudy(){
 }
 </script>
 </body>
-
 </html>
