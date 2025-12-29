@@ -140,7 +140,7 @@ function startTimer() {
 function showQ() {
   if (i >= qs.length) { finish(); return }
 
-  qCounter.innerText = `سؤال ${i + 1} از ${qs.length}`;
+  qCounter.innerText = 'سؤال ' + (i + 1) + ' از ' + qs.length;
   qCat.innerText = qs[i].cat;
   qCat.className = "cat-" + qs[i].cat;
   qId.innerText = "#" + qs[i].id;
@@ -148,7 +148,6 @@ function showQ() {
 
   opts.innerHTML = "";
   qs[i].a.forEach(x => {
-    // تغییر به کنکاتنیشن برای جلوگیری از مشکل تمپلیت
     opts.innerHTML += '<button onclick="ans(\'' + x.replace(/'/g, "\\'") + '\')">' + x + '</button>';
   });
 }
@@ -167,12 +166,12 @@ function finish() {
     examBox.style.display = "none";
     endBox.style.display = "block";
 
-    result.innerText = `${userName}\nنمره: ${score} از 10`;
+    result.innerText = userName + '\nنمره: ' + score + ' از 10';
 
     let t = "<table><tr><th>سؤال</th><th>پاسخ شما</th><th>پاسخ صحیح</th></tr>";
     answersLog.forEach(a => {
-      t += `<tr class="${a.ok ? 'correct' : 'wrong'}">
-        <td>\( {a.q}</td><td> \){a.user}</td><td>${a.correct}</td></tr>`;
+      t += '<tr class="' + (a.ok ? 'correct' : 'wrong') + '">' +
+        '<td>' + a.q + '</td><td>' + a.user + '</td><td>' + a.correct + '</td></tr>';
     });
     review.innerHTML = t + "</table>";
 
@@ -216,12 +215,11 @@ function showStudy() {
   startBox.style.display = "none";
   let html = "<div class='box'><h3>📘 مرور سوالات</h3>";
   ALL_QUESTIONS.forEach(q => {
-    html += `
-      <p class="cat-${q.cat}">
-      <b>${q.id} – ${q.q}</b><br>
-      ✅ ${q.c}</p><hr>`;
+    html += '<p class="cat-' + q.cat + '">' +
+      '<b>' + q.id + ' – ' + q.q + '</b><br>' +
+      '✅ ' + q.c + '</p><hr>';
   });
-  html += `<button onclick="location.reload()">بازگشت</button></div>`;
+  html += '<button onclick="location.reload()">بازگشت</button></div>';
   document.body.insertAdjacentHTML("beforeend", html);
 }
 </script>
