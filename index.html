@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fa">
 <head>
@@ -51,7 +50,7 @@ th,td{border:1px solid #ccc;padding:6px}
 </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwL0MlMVCW_sg9JOwbOzVUsmAaRAm4AkRi1av8xHpju9zNBf-dT5uW6DNMFuqIdd3ri/exec";
+const WEB_APP_URL = "PASTE_YOUR_WEBAPP_URL_HERE"; // جایگزین با URL Web App
 
 let qs=[],i=0,score=0,time=180,timer;
 let answersLog=[],userName="";
@@ -60,10 +59,11 @@ function shuffle(a){return [...a].sort(()=>Math.random()-0.5);}
 function selectQuestions(){return [...shuffle(HISTORY).slice(0,4),...shuffle(GEOGRAPHY).slice(0,4),...shuffle(MIXED).slice(0,2)].sort(()=>Math.random()-0.5);}
 
 function startExam(){
-  userName = name.value.trim();
+  userName = document.getElementById("name").value.trim();
   if(!userName){alert("نام را وارد کنید");return;}
   qs=selectQuestions();i=0;score=0;answersLog=[];time=180;
-  startBox.style.display="none";examBox.style.display="block";
+  document.getElementById("startBox").style.display="none";
+  document.getElementById("examBox").style.display="block";
   showQ();startTimer();
 }
 
@@ -77,37 +77,55 @@ function startTimer(){
 
 function showQ(){
   if(i>=qs.length){finish();return;}
-  qCounter.innerText=`سؤال ${i+1} از ${qs.length}`;
-  qCat.innerText=qs[i].cat;qCat.className="cat-"+qs[i].cat;qId.innerText="#"+qs[i].id;q.innerText=qs[i].q;
+  document.getElementById("qCounter").innerText=`سؤال ${i+1} از ${qs.length}`;
+  document.getElementById("qCat").innerText=qs[i].cat;
+  document.getElementById("qCat").className="cat-"+qs[i].cat;
+  document.getElementById("qId").innerText="#"+qs[i].id;
+  document.getElementById("q").innerText=qs[i].q;
+  let opts=document.getElementById("opts");
   opts.innerHTML="";
-  qs[i].a.forEach(x=>{let b=document.createElement("button");b.innerText=x;b.onclick=()=>ans(x);opts.appendChild(b);});
+  qs[i].a.forEach(x=>{
+    let b=document.createElement("button");
+    b.innerText=x;b.onclick=()=>ans(x);
+    opts.appendChild(b);
+  });
 }
 
 function ans(x){
   answersLog.push({q:qs[i].q,user:x,correct:qs[i].c,ok:x===qs[i].c});
-  if(x===qs[i].c) score++;i++;showQ();
+  if(x===qs[i].c) score++;
+  i++;showQ();
 }
 
 function finish(){
-  clearInterval(timer);examBox.style.display="none";endBox.style.display="block";
-  result.innerText=`${userName}\nنمره: ${score} از 10`;
+  clearInterval(timer);
+  document.getElementById("examBox").style.display="none";
+  document.getElementById("endBox").style.display="block";
+  document.getElementById("result").innerText=`${userName}\\nنمره: ${score} از 10`;
   let t="<table><tr><th>سؤال</th><th>پاسخ شما</th><th>پاسخ صحیح</th></tr>";
   answersLog.forEach(a=>{t+=`<tr class="${a.ok?'correct':'wrong'}"><td>${a.q}</td><td>${a.user}</td><td>${a.correct}</td></tr>`;});
-  review.innerHTML=t+"</table>";
-  fetch(WEB_APP_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"examResult",name:userName,score})})
-  .then(r=>r.json()).then(d=>{if(!d.ok)alert("خطا در ثبت نمره: "+(d.error||""));}).catch(err=>alert("خطا در ارتباط با سرور: "+err));
+  document.getElementById("review").innerHTML=t+"</table>";
+  fetch(WEB_APP_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({action:"examResult",name:userName,score})
+  }).then(r=>r.json()).then(d=>{if(!d.ok)alert("خطا در ثبت نمره: "+(d.error||""));}).catch(err=>alert("خطا در ارتباط با سرور: "+err));
   if(score===10) confetti({particleCount:200,spread:120});
 }
 
 function openStudy(){
   let u=prompt("نام کاربری"),p=prompt("رمز");if(!u||!p)return;
-  fetch(WEB_APP_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"loginStudy",username:u,password:p})})
-  .then(r=>r.json()).then(d=>{if(!d.ok){alert("دسترسی غیرمجاز: "+(d.error||""));return;} showStudy();})
-  .catch(err=>alert("خطا در ارتباط با سرور: "+err));
+  fetch(WEB_APP_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({action:"loginStudy",username:u,password:p})
+  }).then(r=>r.json()).then(d=>{
+    if(!d.ok){alert("دسترسی غیرمجاز: "+(d.error||""));return;} showStudy();
+  }).catch(err=>alert("خطا در ارتباط با سرور: "+err));
 }
 
 function showStudy(){
-  startBox.style.display="none";
+  document.getElementById("startBox").style.display="none";
   let html=`<div class="box"><h3>📘 مرور سوالات</h3>`;
   ALL_QUESTIONS.forEach(q=>{html+=`<p class="cat-${q.cat}"><b>${q.id} – ${q.q}</b><br>✅ ${q.c}</p><hr>`;});
   html+=`<button onclick="location.reload()">بازگشت</button></div>`;
