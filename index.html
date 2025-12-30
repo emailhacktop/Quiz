@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>آزمون آنلاین</title>
 
-<script src="questions.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
@@ -23,15 +22,6 @@ body{
   border-radius:12px;
   box-shadow:0 5px 15px rgba(0,0,0,.1)
 }
-  // تعریف رنگ aminsystem
-/* ===== Footer Designer ===== */
-footer.designer{
-  margin-top:20px;
-  font-size:12px;
-  color:#777;
-  text-align:center;
-}  
-  
 button{
   padding:12px;
   font-size:15px;
@@ -55,11 +45,18 @@ button:hover{opacity:.9}
 .cat-تاریخ{color:#6f42c1}
 .cat-جغرافیا{color:#198754}
 .cat-ترکیبی{color:#fd7e14}
+.cat-شعر{color:#ff69b4} /* جدید برای دسته‌ها */
+.cat-ادبیات{color:#20b2aa}
+.cat-موسیقی{color:#ff4500}
+.cat-هنر{color:#9370db}
+.cat-ریاضی{color:#00ff00}
+.cat-هوش{color:#0000ff}
 
 table{width:100%;border-collapse:collapse;margin-top:15px}
 th,td{border:1px solid #ccc;padding:6px}
 .correct{background:#d4edda}
 .wrong{background:#f8d7da}
+footer {font-size:12px; color:#888; margin-top:20px;} /* برای فوتر */
 </style>
 </head>
 
@@ -67,8 +64,15 @@ th,td{border:1px solid #ccc;padding:6px}
 
 <div class="box" id="startBox">
   <h2>آزمون آنلاین</h2>
-  <p>تاریخ و جغرافیای ایران</p>
-  <input id="name" placeholder="نام شرکت‌کننده"><br><br>
+  <p>انتخاب دسته:</p>
+  <select id="category">
+    <option value="history_geo">تاریخ و جغرافیا</option>
+    <option value="literature">شعر و ادبیات</option>
+    <option value="art_music">موسیقی و هنر</option>
+    <option value="math_iq">هوش و ریاضی</option>
+  </select><br><br>
+  <input id="name" placeholder="نام شرکت‌کننده"><br>
+  <input id="studentId" placeholder="شماره دانش‌آموزی"><br><br>
   <button onclick="startExam()">📝 شروع آزمون</button>
   <button onclick="openStudy()">📘 مرور سوالات</button>
 </div>
@@ -92,8 +96,10 @@ th,td{border:1px solid #ccc;padding:6px}
   <button onclick="location.reload()">خروج</button>
 </div>
 
+<footer>طراح کد: AminSystem2000</footer>
+
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyADsQshRwm_-Wxl-W-hvFfXA4IyyqAPNK9FPzz32XXJjA0Zi1vCU9obGYb9cqFEUPh/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxrtpbgKxNLATREaEOhs605piCkj_wdpFhtF3B9HU_DYfcgP2f3SoajdD41CiBsNmNPSg/exec";
 
 // تعریف همه المنت‌ها
 const startBox = document.getElementById("startBox");
@@ -108,32 +114,68 @@ const opts = document.getElementById("opts");
 const result = document.getElementById("result");
 const review = document.getElementById("review");
 const nameInput = document.getElementById("name");
+const studentIdInput = document.getElementById("studentId");
+const categorySelect = document.getElementById("category");
 
 let qs = [], i = 0, score = 0, time = 180, timer;
-let answersLog = [], userName = "";
+let answersLog = [], userName = "", category = "";
 
 function shuffle(a) { return a.sort(() => Math.random() - 0.5) }
 
 function selectQuestions() {
-  return [
-    ...shuffle(HISTORY).slice(0, 4),
-    ...shuffle(GEOGRAPHY).slice(0, 4),
-    ...shuffle(MIXED).slice(0, 2)
-  ].sort(() => Math.random() - 0.5)
+  // بسته به دسته، از آرایه‌های فایل JS استفاده کن
+  switch (category) {
+    case "history_geo":
+      return [
+        ...shuffle(HISTORY).slice(0, 4),
+        ...shuffle(GEOGRAPHY).slice(0, 4),
+        ...shuffle(MIXED).slice(0, 2)
+      ].sort(() => Math.random() - 0.5);
+    case "literature":
+      return [
+        ...shuffle(POETRY).slice(0, 4),
+        ...shuffle(LITERATURE).slice(0, 4),
+        ...shuffle(MIXED).slice(0, 2)
+      ].sort(() => Math.random() - 0.5);
+    case "art_music":
+      return [
+        ...shuffle(MUSIC).slice(0, 4),
+        ...shuffle(ART).slice(0, 4),
+        ...shuffle(MIXED).slice(0, 2)
+      ].sort(() => Math.random() - 0.5);
+    case "math_iq":
+      return [
+        ...shuffle(MATH).slice(0, 4),
+        ...shuffle(IQ).slice(0, 4),
+        ...shuffle(MIXED).slice(0, 2)
+      ].sort(() => Math.random() - 0.5);
+    default:
+      return [];
+  }
 }
 
 function startExam() {
   try {
     userName = nameInput.value.trim();
-    if (!userName) { alert("نام را وارد کنید"); return }
-    qs = selectQuestions();
-    startBox.style.display = "none";
-    examBox.style.display = "block";
-    showQ();
-    startTimer();
+    const studentId = studentIdInput.value.trim();
+    category = categorySelect.value;
+    if (!userName || !studentId || !category) { alert("نام، شماره و دسته را وارد کنید"); return }
+
+    const script = document.createElement('script');
+    script.src = `questions_${category}.js`;
+    script.onload = () => {
+      qs = selectQuestions();
+      if (qs.length === 0) { alert("سوالات بارگیری نشد!"); return; }
+      startBox.style.display = "none";
+      examBox.style.display = "block";
+      showQ();
+      startTimer();
+    };
+    script.onerror = () => alert("خطا در بارگیری سوالات!");
+    document.head.appendChild(script);
   } catch (err) {
     console.error("خطا در شروع آزمون:", err);
-    alert("مشکلی پیش آمد! دوباره امتحان کنید.");
+    alert("مشکلی پیش آمد!");
   }
 }
 
@@ -191,6 +233,8 @@ function finish() {
       body: JSON.stringify({
         action: "examResult",
         name: userName,
+        studentId: studentIdInput.value.trim(),
+        category: category || "نامشخص",
         score: score
       })
     });
@@ -204,25 +248,35 @@ function finish() {
 function openStudy() {
   const u = prompt("نام کاربری");
   const p = prompt("رمز");
+  category = categorySelect.value; // دسته برای مرور
 
   fetch(WEB_APP_URL, {
     method: "POST",
     body: JSON.stringify({
       action: "loginStudy",
       username: u,
-      password: p
+      password: p,
+      category: category || "نامشخص"
     })
   })
   .then(r => r.json())
   .then(d => {
     if (!d.ok) { alert("دسترسی غیرمجاز"); return }
-    showStudy();
+
+    // لود دینامیک فایل JS برای مرور
+    const script = document.createElement('script');
+    script.src = `questions_${category}.js`;
+    script.onload = () => {
+      showStudyContent();
+    };
+    script.onerror = () => alert("خطا در بارگیری سوالات!");
+    document.head.appendChild(script);
   });
 }
 
-function showStudy() {
+function showStudyContent() {
   startBox.style.display = "none";
-  let html = "<div class='box'><h3>📘 مرور سوالات</h3>";
+  let html = "<div class='box'><h3>📘 مرور سوالات (" + category + ")</h3>";
   ALL_QUESTIONS.forEach(q => {
     html += '<p class="cat-' + q.cat + '">' +
       '<b>' + q.id + ' – ' + q.q + '</b><br>' +
@@ -232,12 +286,6 @@ function showStudy() {
   document.body.insertAdjacentHTML("beforeend", html);
 }
 </script>
-<footer class="designer">
-  طراح کد: <b>aminsystem2000</b>
-</footer>
+
 </body>
 </html>
-
-
-
-
