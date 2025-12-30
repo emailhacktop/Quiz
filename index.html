@@ -99,7 +99,7 @@ footer {font-size:12px; color:#888; margin-top:20px;}
 <footer>طراح کد: AminSystem2000</footer>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzSJeYkEXKRzskMrK6k5IP_7ai6ieFATkwCDuqRgisNqyEC6Qr2J88mHZ2J6Pfzcd1i/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxrtpbgKxNLATREaEOhs605piCkj_wdpFhtF3B9HU_DYfcgP2f3SoajdD41CiBsNmNPSg/exec";
 
 const startBox = document.getElementById("startBox");
 const examBox = document.getElementById("examBox");
@@ -164,7 +164,7 @@ function startExam() {
     script.onload = () => {
       try {
         qs = selectQuestions();
-        if (qs.length === 0) throw new Error("سوالات خالی!");
+        if (qs.length === 0) throw new Error("سوالات خالی! فایل را چک کنید.");
         startBox.style.display = "none";
         examBox.style.display = "block";
         showQ();
@@ -173,7 +173,7 @@ function startExam() {
         alert("خطا در لود سوالات: " + err.message);
       }
     };
-    script.onerror = () => alert("خطا در بارگیری سوالات!");
+    script.onerror = () => alert("خطا در بارگیری فایل سوالات! مسیر فایل را چک کنید.");
     document.head.appendChild(script);
   } catch (err) {
     console.error("خطا در شروع آزمون:", err);
@@ -269,10 +269,10 @@ function openStudy() {
     const script = document.createElement('script');
     script.src = `questions_${category}.js`;
     script.onload = () => {
-      if (typeof ALL_QUESTIONS === 'undefined') return alert("سوالات تعریف نشده!");
+      if (typeof ALL_QUESTIONS === 'undefined') return alert("سوالات تعریف نشده! فایل JS را چک کنید.");
       showStudyContent();
     };
-    script.onerror = () => alert("خطا در بارگیری!");
+    script.onerror = () => alert("خطا در بارگیری فایل سوالات! مسیر را چک کنید.");
     document.head.appendChild(script);
   });
 }
@@ -291,5 +291,4 @@ function showStudyContent() {
 </script>
 
 </body>
-
 </html>
