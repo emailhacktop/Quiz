@@ -7,11 +7,13 @@
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <style>
+/* این بخش برای سبک کلی صفحه و جلوگیری از کپی متن */
 body{
   font-family:tahoma;
   background:#f4f6f8;
   direction:rtl;
-  text-align:center
+  text-align:center;
+  user-select: none; /* غیرقابل انتخاب/کپی متن */
 }
 .box{
   background:#fff;
@@ -20,7 +22,8 @@ body{
   width:90%;
   max-width:520px;
   border-radius:12px;
-  box-shadow:0 5px 15px rgba(0,0,0,.1)
+  box-shadow:0 5px 15px rgba(0,0,0,.1);
+  user-select: none; /* غیرقابل انتخاب/کپی متن در باکس‌ها */
 }
 button{
   padding:12px;
@@ -36,6 +39,7 @@ button{
 button:hover{opacity:.9}
 #timer{color:red;font-weight:bold}
 
+/* این بخش برای متای سوال و رنگ دسته‌ها */
 .qMeta{
   display:flex;
   justify-content:space-between;
@@ -52,6 +56,7 @@ button:hover{opacity:.9}
 .cat-ریاضی{color:#00ff00}
 .cat-هوش{color:#0000ff}
 
+/* این بخش برای جدول نتایج */
 table{width:100%;border-collapse:collapse;margin-top:15px}
 th,td{border:1px solid #ccc;padding:6px}
 .correct{background:#d4edda}
@@ -99,7 +104,8 @@ footer {font-size:12px; color:#888; margin-top:20px;}
 <footer>طراح کد: AminSystem2000</footer>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxb7_ftCamS7Vfq7fm_wUFxPgF14klFs5wpg-90SHH1Fx1RgjVI87ikPR_SPuLS2GCp/exec";
+// این بخش برای تعریف ثابت‌ها و المنت‌های DOM
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxrtpbgKxNLATREaEOhs605piCkj_wdpFhtF3B9HU_DYfcgP2f3SoajdD41CiBsNmNPSg/exec";
 
 const startBox = document.getElementById("startBox");
 const examBox = document.getElementById("examBox");
@@ -119,8 +125,18 @@ const categorySelect = document.getElementById("category");
 let qs = [], i = 0, score = 0, time = 180, timer;
 let answersLog = [], userName = "", category = "";
 
+// این بخش برای ترجمه category به فارسی (برای تیتر مرور)
+const categoryMap = {
+  "history_geo": "تاریخ و جغرافیا",
+  "literature": "شعر و ادبیات",
+  "art_music": "موسیقی و هنر",
+  "math_iq": "هوش و ریاضی"
+};
+
+// این بخش برای فانکشن‌های کمکی مثل shuffle
 function shuffle(a) { return a.sort(() => Math.random() - 0.5) }
 
+// این بخش برای انتخاب سوالات بر اساس دسته
 function selectQuestions() {
   switch (category) {
     case "history_geo":
@@ -152,6 +168,7 @@ function selectQuestions() {
   }
 }
 
+// این بخش برای شروع آزمون
 function startExam() {
   category = categorySelect.value;
   try {
@@ -164,7 +181,7 @@ function startExam() {
     script.onload = () => {
       try {
         qs = selectQuestions();
-        if (qs.length === 0) throw new Error("سوالات خالی! فایل را چک کنید.");
+        if (qs.length === 0) throw new Error("سوالات خالی!");
         startBox.style.display = "none";
         examBox.style.display = "block";
         showQ();
@@ -173,7 +190,7 @@ function startExam() {
         alert("خطا در لود سوالات: " + err.message);
       }
     };
-    script.onerror = () => alert("خطا در بارگیری فایل سوالات! مسیر فایل را چک کنید.");
+    script.onerror = () => alert("خطا در بارگیری سوالات!");
     document.head.appendChild(script);
   } catch (err) {
     console.error("خطا در شروع آزمون:", err);
@@ -181,6 +198,7 @@ function startExam() {
   }
 }
 
+// این بخش برای تایمر آزمون
 function startTimer() {
   timer = setInterval(() => {
     let m = Math.floor(time / 60), s = time % 60;
@@ -190,6 +208,7 @@ function startTimer() {
   }, 1000);
 }
 
+// این بخش برای نمایش سوال
 function showQ() {
   if (i >= qs.length) { finish(); return }
 
@@ -205,6 +224,7 @@ function showQ() {
   });
 }
 
+// این بخش برای ثبت جواب
 function ans(x) {
   answersLog.push({
     q: qs[i].q, user: x, correct: qs[i].c, ok: x === qs[i].c
@@ -213,6 +233,7 @@ function ans(x) {
   i++; showQ();
 }
 
+// این بخش برای پایان آزمون و ثبت
 function finish() {
   try {
     clearInterval(timer);
@@ -246,6 +267,7 @@ function finish() {
   }
 }
 
+// این بخش برای مطالعه امن (مرور سوالات)
 function openStudy() {
   category = categorySelect.value;
   const studyName = prompt("نام شرکت‌کننده برای ثبت مطالعه");
@@ -265,31 +287,26 @@ function openStudy() {
   })
   .then(r => r.json())
   .then(d => {
-    if (!d.ok) return alert("دسترسی غیرمجاز");
-    const script = document.createElement('script');
-    script.src = `questions_${category}.js`;
-    script.onload = () => {
-      if (typeof ALL_QUESTIONS === 'undefined') return alert("سوالات تعریف نشده! فایل JS را چک کنید.");
-      showStudyContent();
-    };
-    script.onerror = () => alert("خطا در بارگیری فایل سوالات! مسیر را چک کنید.");
-    document.head.appendChild(script);
+    if (!d.ok) { alert("دسترسی غیرمجاز"); return }
+    showStudy();
   });
 }
 
-function showStudyContent() {
+// این بخش برای نمایش محتوای مرور (با تیتر فارسی)
+function showStudy() {
+  const title = categoryMap[category] || category; // ترجمه به فارسی
   startBox.style.display = "none";
-  let html = "<div class='box'><h3>📘 مرور سوالات (" + category + ")</h3>";
+  let html = "<div class='box'><h3>📘 مرور سوالات (" + title + ")</h3>";
   ALL_QUESTIONS.forEach(q => {
-    html += '<p class="cat-' + q.cat + '">' +
-      '<b>' + q.id + ' – ' + q.q + '</b><br>' +
-      '✅ ' + q.c + '</p><hr>';
+    html += `
+      <p class="cat-${q.cat}">
+      <b>${q.id} – ${q.q}</b><br>
+      ✅ ${q.c}</p><hr>`;
   });
-  html += '<button onclick="location.reload()">بازگشت</button></div>';
-  document.body.insertAdjacentHTML("beforeend", html);
+  html += `<button onclick="location.reload()">بازگشت</button></div>`;
+  document.body.insertAdjacentHTML("beforeend",html);
 }
 </script>
 
 </body>
-
 </html>
