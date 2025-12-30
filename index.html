@@ -99,7 +99,7 @@ footer {font-size:12px; color:#888; margin-top:20px;}
 <footer>طراح کد: AminSystem2000</footer>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxb7_ftCamS7Vfq7fm_wUFxPgF14klFs5wpg-90SHH1Fx1RgjVI87ikPR_SPuLS2GCp/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxrtpbgKxNLATREaEOhs605piCkj_wdpFhtF3B9HU_DYfcgP2f3SoajdD41CiBsNmNPSg/exec";
 
 const startBox = document.getElementById("startBox");
 const examBox = document.getElementById("examBox");
@@ -274,26 +274,36 @@ function openStudy() {
         showStudyContent();
       } catch (err) {
         alert("خطا در نمایش مرور: " + err.message);
+        startBox.style.display = "block"; // بازگشت به شروع اگر خطا
       }
     };
-    script.onerror = () => alert("خطا در بارگیری فایل سوالات!");
+    script.onerror = () => {
+      alert("خطا در بارگیری فایل سوالات!");
+      startBox.style.display = "block"; // بازگشت
+    };
     document.head.appendChild(script);
-  }).catch(err => alert("خطا در اتصال به سرور: " + err.message));
+  }).catch(err => {
+    alert("خطا در اتصال به سرور: " + err.message);
+    startBox.style.display = "block"; // بازگشت
+  });
 }
 
 function showStudyContent() {
   startBox.style.display = "none";
   let html = "<div class='box'><h3>📘 مرور سوالات (" + category + ")</h3>";
-  ALL_QUESTIONS.forEach(q => {
-    html += '<p class="cat-' + q.cat + '">' +
-      '<b>' + q.id + ' – ' + q.q + '</b><br>' +
-      '✅ ' + q.c + '</p><hr>';
-  });
+  if (ALL_QUESTIONS.length === 0) {
+    html += "<p>سوالات یافت نشد!</p>";
+  } else {
+    ALL_QUESTIONS.forEach(q => {
+      html += '<p class="cat-' + q.cat + '">' +
+        '<b>' + q.id + ' – ' + q.q + '</b><br>' +
+        '✅ ' + q.c + '</p><hr>';
+    });
+  }
   html += '<button onclick="location.reload()">بازگشت</button></div>';
   document.body.insertAdjacentHTML("beforeend", html);
 }
 </script>
 
 </body>
-
 </html>
