@@ -2,7 +2,7 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- جدید: برای بهینه موبایل -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- بهینه برای موبایل -->
 <title>آزمون آنلاین</title>
 
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -59,28 +59,33 @@ th,td{border:1px solid #ccc;padding:6px}
 .wrong{background:#f8d7da}
 footer {font-size:12px; color:#888; margin-top:20px;}
 
-/* جدید: بهینه برای موبایل (responsive) */
+/* بهینه‌سازی برای موبایل */
 @media (max-width: 600px) {
   .box {
-    width: 95%; /* پهن‌تر برای موبایل */
-    padding: 15px; /* حاشیه کمتر */
-    margin: 10px auto; /* فاصله کمتر */
+    width: 98%; /* پهن‌تر برای موبایل */
+    padding: 15px;
+    margin: 10px auto;
   }
   button {
-    font-size: 14px; /* فونت کوچکتر */
+    font-size: 16px; /* خواناتر */
     padding: 10px;
   }
   h2, h3 {
-    font-size: 18px; /* تیترها خواناتر */
+    font-size: 20px;
   }
-  input {
+  input, select {
     width: 95%; /* ورودی‌ها پهن‌تر */
+    font-size: 16px;
   }
   table {
-    font-size: 12px; /* جدول کوچکتر */
+    font-size: 14px;
   }
   .qMeta {
     font-size: 12px;
+  }
+  #opts button {
+    width: 100%; /* گزینه‌ها در موبایل پهن‌تر */
+    margin: 5px 0;
   }
 }
 </style>
@@ -245,34 +250,74 @@ function finish() {
     examBox.style.display = "none";
     endBox.style.display = "block";
 
-    result.innerText = `${userName}\nنمره: ${score} از 10`;
+    result.innerText = userName + '\nنمره: ' + score + ' از 10';
 
     let t = "<table><tr><th>سؤال</th><th>پاسخ شما</th><th>پاسخ صحیح</th></tr>";
-    answersLog.forEach(a=>{
-      t+=`<tr class="${a.ok?'correct':'wrong'}">
-        <td>\( {a.q}</td><td> \){a.user}</td><td>${a.correct}</td></tr>`;
-  });
-    review.innerHTML = t+"</table>";
+    answersLog.forEach(a => {
+      t += '<tr class="' + (a.ok ? 'correct' : 'wrong') + '">' +
+        '<td>' + a.q + '</td><td>' + a.user + '</td><td>' + a.correct + '</td></tr>';
+    });
+    review.innerHTML = t + "</table>";
 
-    if (score===10) confetti({particleCount:200,spread:120});
+    if (score === 10) confetti({ particleCount: 200, spread: 120 });
 
-    fetch(WEB_APP_URL,{
-      method:"POST",
-      body:JSON.stringify({
-        action:"examResult",
-        name:userName,
-        score:score
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "examResult",
+        name: userName,
+        studentId: studentIdInput.value.trim(),
+        category: category || "نامشخص",
+        score: score
       })
     });
   } catch (err) {
-    return out({ ok: false, error: err.toString() });
+    console.error("خطا در پایان آزمون:", err);
+    alert("مشکلی در ثبت نتیجه پیش آمد!");
   }
 }
 
-function out(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+function openStudy() {
+  category = categorySelect.value;
+  const studyName = prompt("نام شرکت‌کننده برای ثبت مطالعه");
+  if (!studyName) return alert("نام لازم است!");
+  const u = prompt("نام کاربری");
+  const p = prompt("رمز");
+
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "loginStudy",
+      username: u,
+      password: p,
+      category: category || "نامشخص",
+      studyName: studyName
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (!d.ok) { alert("دسترسی غیرمجاز"); return }
+    const script = document.createElement('script');
+    script.src = `questions_${category}.js`;
+    script.onload = () => {
+      if (typeof ALL_QUESTIONS === 'undefined') { alert("سوالات تعریف نشده!"); return }
+      showStudyContent();
+    };
+    script.onerror = () => alert("خطا در بارگیری!");
+    document.head.appendChild(script);
+  });
+}
+
+function showStudyContent() {
+  startBox.style.display = "none";
+  let html = "<div class='box'><h3>📘 مرور سوالات (" + category + ")</h3>";
+  ALL_QUESTIONS.forEach(q => {
+    html += '<p class="cat-' + q.cat + '">' +
+      '<b>' + q.id + ' – ' + q.q + '</b><br>' +
+      '✅ ' + q.c + '</p><hr>';
+  });
+  html += '<button onclick="location.reload()">بازگشت</button></div>';
+  document.body.insertAdjacentHTML("beforeend", html);
 }
 </script>
 
