@@ -2,7 +2,6 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- جدید: برای بهینه موبایل -->
 <title>آزمون آنلاین</title>
 
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -12,7 +11,8 @@ body{
   font-family:tahoma;
   background:#f4f6f8;
   direction:rtl;
-  text-align:center
+  text-align:center;
+  user-select: none; /* غیرقابل انتخاب/کپی کلی صفحه */
 }
 .box{
   background:#fff;
@@ -21,7 +21,8 @@ body{
   width:90%;
   max-width:520px;
   border-radius:12px;
-  box-shadow:0 5px 15px rgba(0,0,0,.1)
+  box-shadow:0 5px 15px rgba(0,0,0,.1);
+  user-select: none; /* غیرقابل انتخاب/کپی در باکس‌ها */
 }
 button{
   padding:12px;
@@ -41,7 +42,8 @@ button:hover{opacity:.9}
   display:flex;
   justify-content:space-between;
   font-size:13px;
-  margin-bottom:8px
+  margin-bottom:8px;
+  user-select: none; /* غیرقابل انتخاب/کپی متا */
 }
 .cat-تاریخ{color:#6f42c1}
 .cat-جغرافیا{color:#198754}
@@ -58,31 +60,7 @@ th,td{border:1px solid #ccc;padding:6px}
 .correct{background:#d4edda}
 .wrong{background:#f8d7da}
 footer {font-size:12px; color:#888; margin-top:20px;}
-
-/* جدید: بهینه برای موبایل (responsive) */
-@media (max-width: 600px) {
-  .box {
-    width: 95%; /* پهن‌تر برای موبایل */
-    padding: 15px; /* حاشیه کمتر */
-    margin: 10px auto; /* فاصله کمتر */
-  }
-  button {
-    font-size: 14px; /* فونت کوچکتر */
-    padding: 10px;
-  }
-  h2, h3 {
-    font-size: 18px; /* تیترها خواناتر */
-  }
-  input {
-    width: 95%; /* ورودی‌ها پهن‌تر */
-  }
-  table {
-    font-size: 12px; /* جدول کوچکتر */
-  }
-  .qMeta {
-    font-size: 12px;
-  }
-}
+#categoryResult {font-size:14px; color:#555; text-align:right; margin-bottom:10px; user-select: none;} /* برای نمایش نوع آزمون در نتیجه */
 </style>
 </head>
 
@@ -103,7 +81,7 @@ footer {font-size:12px; color:#888; margin-top:20px;}
   <button onclick="openStudy()">📘 مرور سوالات</button>
 </div>
 
-<div class="box" id="examBox" style="display:none">
+<div class="box" id="examBox" style="display:none; user-select: none;"> <!-- غیرقابل کپی در آزمون -->
   <p>⏱️ زمان باقی‌مانده: <span id="timer">03:00</span></p>
   <p id="qCounter"></p>
 
@@ -116,7 +94,8 @@ footer {font-size:12px; color:#888; margin-top:20px;}
   <div id="opts"></div>
 </div>
 
-<div class="box" id="endBox" style="display:none">
+<div class="box" id="endBox" style="display:none; user-select: none;"> <!-- غیرقابل کپی در نتیجه -->
+  <p id="categoryResult"></p> <!-- جدید: نمایش نوع آزمون -->
   <h2 id="result"></h2>
   <div id="review"></div>
   <button onclick="location.reload()">خروج</button>
@@ -141,9 +120,17 @@ const review = document.getElementById("review");
 const nameInput = document.getElementById("name");
 const studentIdInput = document.getElementById("studentId");
 const categorySelect = document.getElementById("category");
+const categoryResult = document.getElementById("categoryResult"); // جدید
 
 let qs = [], i = 0, score = 0, time = 180, timer;
 let answersLog = [], userName = "", category = "";
+
+const categoryMap = { // برای ترجمه به فارسی
+  "history_geo": "تاریخ و جغرافیا",
+  "literature": "شعر و ادبیات",
+  "art_music": "موسیقی و هنر",
+  "math_iq": "هوش و ریاضی"
+};
 
 function shuffle(a) { return a.sort(() => Math.random() - 0.5) }
 
@@ -245,37 +232,77 @@ function finish() {
     examBox.style.display = "none";
     endBox.style.display = "block";
 
-    result.innerText = `${userName}\nنمره: ${score} از 10`;
+    categoryResult.innerText = 'نوع آزمون: ' + (categoryMap[category] || category); // جدید: نمایش نوع آزمون فارسی
+    result.innerText = userName + '\nنمره: ' + score + ' از 10';
 
     let t = "<table><tr><th>سؤال</th><th>پاسخ شما</th><th>پاسخ صحیح</th></tr>";
-    answersLog.forEach(a=>{
-      t+=`<tr class="${a.ok?'correct':'wrong'}">
-        <td>\( {a.q}</td><td> \){a.user}</td><td>${a.correct}</td></tr>`;
-  });
-    review.innerHTML = t+"</table>";
+    answersLog.forEach(a => {
+      t += '<tr class="' + (a.ok ? 'correct' : 'wrong') + '">' +
+        '<td>' + a.q + '</td><td>' + a.user + '</td><td>' + a.correct + '</td></tr>';
+    });
+    review.innerHTML = t + "</table>";
 
-    if (score===10) confetti({particleCount:200,spread:120});
+    if (score === 10) confetti({ particleCount: 200, spread: 120 });
 
-    fetch(WEB_APP_URL,{
-      method:"POST",
-      body:JSON.stringify({
-        action:"examResult",
-        name:userName,
-        score:score
+    fetch(WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "examResult",
+        name: userName,
+        studentId: studentIdInput.value.trim(),
+        category: category || "نامشخص",
+        score: score
       })
     });
   } catch (err) {
-    return out({ ok: false, error: err.toString() });
+    console.error("خطا در پایان آزمون:", err);
+    alert("مشکلی در ثبت نتیجه پیش آمد!");
   }
 }
 
-function out(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
+function openStudy() {
+  category = categorySelect.value;
+  const studyName = prompt("نام شرکت‌کننده برای ثبت مطالعه");
+  if (!studyName) return alert("نام لازم است!");
+  const u = prompt("نام کاربری");
+  const p = prompt("رمز");
+
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "loginStudy",
+      username: u,
+      password: p,
+      category: category || "نامشخص",
+      studyName: studyName
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (!d.ok) { alert("دسترسی غیرمجاز"); return }
+    const script = document.createElement('script');
+    script.src = `questions_${category}.js`;
+    script.onload = () => {
+      if (typeof ALL_QUESTIONS === 'undefined') { alert("سوالات تعریف نشده!"); return }
+      showStudyContent();
+    };
+    script.onerror = () => alert("خطا در بارگیری!");
+    document.head.appendChild(script);
+  });
+}
+
+function showStudyContent() {
+  startBox.style.display = "none";
+  let html = "<div class='box'><h3>📘 مرور سوالات (" + (categoryMap[category] || category) + ")</h3>";
+  ALL_QUESTIONS.forEach(q => {
+    html += '<p class="cat-' + q.cat + '">' +
+      '<b>' + q.id + ' – ' + q.q + '</b><br>' +
+      '✅ ' + q.c + '</p><hr>';
+  });
+  html += '<button onclick="location.reload()">بازگشت</button></div>';
+  document.body.insertAdjacentHTML("beforeend", html);
 }
 </script>
 
 </body>
-
 </html>
