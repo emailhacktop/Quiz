@@ -15,8 +15,6 @@ content="width=device-width,initial-scale=1,maximum-scale=1">
 
 <link rel="icon" href="icon192.png">
 
-
-
 <style>
 /* ==========================================================
    Amin System Gold Calculator
@@ -1593,6 +1591,30 @@ Version 2.1
 
 </footer>
 
+<hr style="margin:25px 0;">
+
+<h2>🪙 قیمت طلای ۱۸ عیار با توجه به انس جهانی</h2>
+
+<div class="group">
+    <label>انس جهانی طلا (دلار)</label>
+    <input id="ounce" type="number" placeholder="5000">
+</div>
+
+<div class="group">
+    <label>قیمت دلار (تومان)</label>
+    <input id="usd" type="number" placeholder="158000">
+</div>
+
+<div class="group">
+    <button type="button" onclick="calcOunceGold()">
+        محاسبه
+    </button>
+</div>
+
+<div class="group">
+    <h3 id="gold18Result">
+        هنوز محاسبه نشده
+    </h3>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -3210,6 +3232,34 @@ window.addEventListener("load",()=>{
 navigator.serviceWorker.register("service-worker.js");
 
 });
+
+}
+
+</script>
+
+<script>
+
+function calcOunceGold(){
+
+let ounce = Number(document.getElementById("ounce").value);
+
+let usd = Number(document.getElementById("usd").value);
+
+if(ounce<=0 || usd<=0){
+
+document.getElementById("gold18Result").innerHTML =
+"مقادیر را وارد کنید";
+
+return;
+
+}
+
+let gold18 = (ounce * usd / 31.1034768) * 0.75;
+
+document.getElementById("gold18Result").innerHTML =
+"هر گرم طلای ۱۸ عیار : <b>" +
+Math.round(gold18).toLocaleString("fa-IR") +
+"</b> تومان";
 
 }
 
