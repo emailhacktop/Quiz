@@ -31,7 +31,7 @@ content="width=device-width,initial-scale=1,maximum-scale=1">
 /* ==========================================================
    Amin System Gold Calculator
    Style.css
-   Version 2.5
+   Version 2.6
 ========================================================== */
 
 :root{
@@ -1154,7 +1154,7 @@ button{
     z-index: 10;
 }
 /* ==========================================================
-   مظنه بازار (نسخه 2.4)
+   مظنه بازار (نسخه 2.6)
    استایل بخش نمایش زنده انس جهانی و دلار — Amin System
 ========================================================== */
 
@@ -2148,6 +2148,80 @@ body.light footer{
     }
 }
 
+/* ==========================================================
+   قیمت لحظه‌ای گرم طلا — بالای صفحه (v2.6)
+========================================================== */
+
+.gram-hero{
+    background:linear-gradient(160deg,rgba(212,175,55,.14),rgba(255,255,255,.03));
+    border:1px solid rgba(212,175,55,.4);
+    border-radius:20px;
+    padding:16px 18px;
+    margin-bottom:20px;
+    text-align:center;
+    box-shadow:0 10px 28px rgba(0,0,0,.35);
+    animation:fadeUp .8s;
+}
+
+.gram-hero-top{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+}
+
+.gram-hero-title{
+    font-size:17px;
+    font-weight:900;
+    color:var(--gold2);
+}
+
+.gram-hero-sub{
+    font-size:12px;
+    color:#bbb;
+    margin-top:4px;
+}
+
+.gram-hero-price{
+    font-size:34px;
+    font-weight:900;
+    color:#fff;
+    margin:8px 0 2px;
+    letter-spacing:.5px;
+    direction:ltr;
+    text-shadow:0 0 18px rgba(212,175,55,.35);
+    min-height:48px;
+}
+
+.gram-use{
+    max-width:260px;
+    margin:10px auto 0;
+}
+
+body.light .gram-hero{
+    background:#fff8e6;
+    border-color:#e3cfa0;
+}
+
+body.light .gram-hero-title{
+    color:#8a6d1b;
+}
+
+body.light .gram-hero-sub{
+    color:#777;
+}
+
+body.light .gram-hero-price{
+    color:#222;
+    text-shadow:none;
+}
+
+@media(max-width:600px){
+    .gram-hero-price{
+        font-size:28px;
+    }
+}
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2177,6 +2251,17 @@ body.light footer{
 <p style="color:#FFD700;font-weight:bold;">ماشین حساب حرفه‌ای طلا و مصنوعات</p>
 
 </header>
+
+<div class="gram-hero" id="gramHero">
+    <div class="gram-hero-top">
+        <span class="gram-hero-title">💰 قیمت لحظه‌ای گرم طلا</span>
+        <span class="live-dot" id="gramDot"></span>
+    </div>
+    <div class="gram-hero-sub">طلای ۱۸ عیار • تومان</div>
+    <div class="gram-hero-price" id="gramLive" aria-live="polite">…</div>
+    <div class="market-meta"><span id="gramSrc">—</span></div>
+    <button type="button" class="use-btn gram-use" id="useGram" disabled>⬅ استفاده در فاکتور</button>
+</div>
 
 <div class="card">
 
@@ -2539,7 +2624,7 @@ placeholder="09xxxxxxxxx">
 
 <li>📊 خروجی اکسل (بدون نیاز به اینترنت)</li>
 
-<li>📡 مظنه بازار: نمایش زنده انس جهانی و دلار (نیاز به اینترنت دارد)</li>
+<li>📡 مظنه بازار: نمایش زنده انس جهانی، دلار و گرم طلا (نیاز به اینترنت دارد)</li>
 
 <li>🌙 تم روشن/تیره با دکمه بالای صفحه</li>
 
@@ -2561,6 +2646,10 @@ placeholder="09xxxxxxxxx">
 <li>در پایین صفحه، بخش «مظنه بازار» نرخ زنده <b>انس جهانی طلا (دلار)</b> و <b>قیمت دلار (تومان)</b> را از اینترنت دریافت و نمایش می‌دهد.</li>
 
 <li>منبع اصلی نرخ‌ها سایت معتبر <b>TGJU</b> است و در صورت اختلال، به‌صورت خودکار از منابع معتبر جهانی استفاده می‌شود؛ نام منبع همیشه زیر هر نرخ نوشته می‌شود.</li>
+
+<li>بالای صفحه، کادر «💰 قیمت لحظه‌ای گرم طلا» نرخ هر گرم طلای ۱۸ عیار (تومان) را از TGJU نمایش می‌دهد و همراه مظنه بازار بروز می‌شود.</li>
+
+<li>با دکمه <b>⬅ استفاده در فاکتور</b> می‌توانید این نرخ را مستقیم در فیلد «قیمت هر گرم ۱۸ عیار» فرم فاکتور وارد کنید، سپس مثل همیشه <b>① محاسبه فاکتور</b> را بزنید.</li>
 
 <li>ستون سمت راست هر فیلد <b>ورودی دستی</b> است و ملاک محاسبه همان است؛ ستون سمت چپ فقط نمایشی است.</li>
 
@@ -2620,7 +2709,7 @@ placeholder="09xxxxxxxxx">
 
 <div>
 
-Version 2.5
+Version 2.6
 
 </div>
 
@@ -2723,7 +2812,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 <script>
 /* ==========================================
    Amin System Gold Calculator
-   Version 2.5
+   Version 2.6
 ========================================== */
 
 const weight = document.getElementById("weight");
@@ -4551,7 +4640,7 @@ document.addEventListener("keydown",function(e){
 ========================================*/
 
 console.log(
-"Amin System Gold Calculator v2.5"
+"Amin System Gold Calculator v2.6"
 );
 </script>
 
@@ -4600,7 +4689,7 @@ Math.round(gold18).toLocaleString("fa-IR") +
 <script>
 /* ==========================================================
    مظنه بازار — دریافت زنده انس جهانی و دلار از اینترنت
-   Amin System Gold Calculator v2.5
+   Amin System Gold Calculator v2.6
    توجه: این ماژول فقط «نمایش» می‌دهد و هیچ فرمولی را
    تغییر نمی‌دهد. ملاک محاسبه همان ورودی‌های دستی است.
 ========================================================== */
@@ -4610,6 +4699,7 @@ Math.round(gold18).toLocaleString("fa-IR") +
 /* بازه‌های sanity برای جلوگیری از نمایش عدد پرت */
 var OUNCE_MIN = 1000, OUNCE_MAX = 15000;   /* دلار */
 var USD_MIN = 50000, USD_MAX = 5000000;    /* تومان */
+var GRAM_MIN = 500000, GRAM_MAX = 500000000;  /* تومان، هر گرم ۱۸ عیار */
 var CACHE_KEY = "marketCacheV2";
 var REFRESH_MS = 5 * 60 * 1000;            /* بروزرسانی خودکار هر ۵ دقیقه */
 
@@ -4620,9 +4710,10 @@ var ounceSrc = $("ounceSrc"), usdSrc = $("usdSrc");
 var useOunce = $("useOunce"), useUsd = $("useUsd");
 var marketDot = $("marketDot"), marketStatus = $("marketStatus");
 var refreshBtn = $("refreshMarket");
+var gramLive = $("gramLive"), gramSrc = $("gramSrc"), useGram = $("useGram"), gramDot = $("gramDot");
 
 /* اگر به هر دلیل المان‌ها در صفحه نبودند، بی‌سروصدا خارج شو */
-if (!ounceLive || !usdLive || !marketStatus) return;
+if (!ounceLive || !usdLive || !gramLive || !marketStatus) return;
 
 function toast(msg) {
     if (typeof showToast === "function") showToast(msg);
@@ -4685,8 +4776,13 @@ var TGJU_URLS = [
     "https://call3.tgju.org/ajax.json"
 ];
 
-function tgjuRace(key, divide, label) {
-    return new Promise(function (resolve, reject) {
+/* یک‌بار گرفتن فایل TGJU در هر دور بروزرسانی و اشتراک بین هر سه فیلد (v2.6) */
+var tgjuCache = { gen: -1, promise: null };
+
+function tgjuDoc() {
+    if (tgjuCache.gen === refreshGen && tgjuCache.promise) return tgjuCache.promise;
+    tgjuCache.gen = refreshGen;
+    tgjuCache.promise = new Promise(function (resolve, reject) {
         var pending = TGJU_URLS.length;
         var done = false;
         TGJU_URLS.forEach(function (u) {
@@ -4694,14 +4790,8 @@ function tgjuRace(key, divide, label) {
                 if (done) return;
                 try {
                     var j = parseTgju(t);
-                    var node = j && j.current && j.current[key];
-                    if (!node || node.p === undefined) throw new Error("key");
-                    var v = toNum(node.p) / divide;
-                    if (isFinite(v) && v > 0) {
-                        done = true;
-                        resolve({ value: v, source: label, stamp: (node.t_en || node.t || "") });
-                    }
-                } catch (e) { /* این مسیر نشد؛ بقیه ادامه می‌دهند */ }
+                    if (j && j.current) { done = true; resolve(j); return; }
+                } catch (e) { /* این مسیر نشد */ }
                 pending--;
                 if (pending === 0 && !done) reject(new Error("tgju"));
             }).catch(function () {
@@ -4709,6 +4799,17 @@ function tgjuRace(key, divide, label) {
                 if (pending === 0 && !done) reject(new Error("tgju"));
             });
         });
+    });
+    return tgjuCache.promise;
+}
+
+function tgjuRace(key, divide, label) {
+    return tgjuDoc().then(function (j) {
+        var node = j.current[key];
+        if (!node || node.p === undefined) throw new Error("key");
+        var v = toNum(node.p) / divide;
+        if (!isFinite(v) || v <= 0) throw new Error("num");
+        return { value: v, source: label, stamp: (node.t_en || node.t || "") };
     });
 }
 
@@ -4783,6 +4884,38 @@ var usdSources = [
     }
 ];
 
+/* ---------- قیمت لحظه‌ای گرم طلای ۱۸ عیار (v2.6) ---------- */
+var liveValues = { ounce: null, usd: null };
+
+/* اگر نرخ مستقیم گرمی در دسترس نبود، از انس و دلار زنده حساب می‌شود */
+function computedGram() {
+    return new Promise(function (resolve, reject) {
+        var waited = 0;
+        var iv = setInterval(function () {
+            waited += 250;
+            var o = liveValues.ounce, u = liveValues.usd;
+            if (o && u) {
+                clearInterval(iv);
+                resolve({ value: (o * u / 31.1034768) * 0.75, source: "محاسبه از انس و دلار زنده" });
+            } else if (waited >= 15000) {
+                clearInterval(iv);
+                reject(new Error("nog"));
+            }
+        }, 250);
+    });
+}
+
+var gramSources = [
+    {
+        name: "TGJU",
+        run: function () { return tgjuRace("geram18", 10, "TGJU (گرم ۱۸ عیار)"); }
+    },
+    {
+        name: "computed",
+        run: function () { return computedGram(); }
+    }
+];
+
 /* ---------- حافظه آخرین نرخ (برای حالت آفلاین) ---------- */
 function readCache() {
     try { return JSON.parse(localStorage.getItem(CACHE_KEY)) || {}; }
@@ -4801,11 +4934,14 @@ function writeCache(key, value, source) {
 var fieldState = {};
 
 function paintLive(inputEl, srcEl, value, meta, decimals) {
+    var isInput = inputEl.tagName === "INPUT";
     if (value === null || value === undefined || !isFinite(value)) {
-        inputEl.value = "";
-        inputEl.placeholder = "—";
+        if (isInput) { inputEl.value = ""; inputEl.placeholder = "…"; }
+        else { inputEl.textContent = "—"; }
     } else {
-        inputEl.value = fmt(value, decimals);
+        var txt = fmt(value, decimals);
+        if (isInput) { inputEl.value = txt; }
+        else { inputEl.textContent = txt; }
     }
     srcEl.textContent = meta;
 }
@@ -4813,16 +4949,20 @@ function paintLive(inputEl, srcEl, value, meta, decimals) {
 function updateHead() {
     var o = fieldState.ounce || {};
     var u = fieldState.usd || {};
-    var liveCount = (o.live ? 1 : 0) + (u.live ? 1 : 0);
-    var cacheCount = (o.cached ? 1 : 0) + (u.cached ? 1 : 0);
-    if (liveCount === 2) {
+    var g = fieldState.gram || {};
+    var liveCount = (o.live ? 1 : 0) + (u.live ? 1 : 0) + (g.live ? 1 : 0);
+    var cacheCount = (o.cached ? 1 : 0) + (u.cached ? 1 : 0) + (g.cached ? 1 : 0);
+    if (liveCount === 3) {
         marketDot.className = "live-dot on";
+        if (gramDot) gramDot.className = "live-dot on";
         marketStatus.textContent = "🟢 متصل به بازار • آخرین بروزرسانی " + faTime(new Date());
     } else if (liveCount === 1 || cacheCount > 0) {
         marketDot.className = "live-dot warn";
+        if (gramDot) gramDot.className = "live-dot warn";
         marketStatus.textContent = "🟡 اتصال ناقص — برخی نرخ‌ها ذخیره‌شده‌اند • " + faTime(new Date());
     } else {
         marketDot.className = "live-dot off";
+        if (gramDot) gramDot.className = "live-dot off";
         marketStatus.textContent = "🔴 بدون اتصال به اینترنت — نرخ بازار در دسترس نیست";
     }
 }
@@ -4855,6 +4995,7 @@ function loadField(cfg) {
                 shownIdx = idx;
                 liveOk = true;
                 fieldState[cfg.key].live = true;
+                if (cfg.key === "ounce" || cfg.key === "usd") liveValues[cfg.key] = r.value;
                 var meta = "🌐 " + r.source + " • " + faTime(new Date());
                 if (r.stamp && /[0-9]/.test(r.stamp)) meta += " (TGJU: " + r.stamp + ")";
                 paintLive(cfg.input, cfg.srcEl, r.value, meta, cfg.dec);
@@ -4884,6 +5025,8 @@ function refreshAll(auto) {
     marketStatus.textContent = "⏳ در حال اتصال به بازار…";
     refreshGen++;
     var myGen = refreshGen;
+    liveValues.ounce = null;
+    liveValues.usd = null;
     loadField({
         key: "ounce", gen: myGen, input: ounceLive, srcEl: ounceSrc, useBtn: useOunce,
         sources: ounceSources, dec: 2,
@@ -4893,6 +5036,11 @@ function refreshAll(auto) {
         key: "usd", gen: myGen, input: usdLive, srcEl: usdSrc, useBtn: useUsd,
         sources: usdSources, dec: 0,
         valid: function (v) { return v > USD_MIN && v < USD_MAX; }
+    });
+    loadField({
+        key: "gram", gen: myGen, input: gramLive, srcEl: gramSrc, useBtn: useGram,
+        sources: gramSources, dec: 0,
+        valid: function (v) { return v > GRAM_MIN && v < GRAM_MAX; }
     });
     if (!auto && typeof navigator !== "undefined" && navigator.onLine === false) {
         toast("شما آفلاین هستید؛ آخرین نرخ ذخیره‌شده نمایش داده می‌شود.");
@@ -4912,6 +5060,18 @@ useUsd.onclick = function () {
     if (!isFinite(v) || v <= 0) return;
     $("usd").value = Math.round(v);
     toast("نرخ بازار دلار وارد شد؛ دکمه محاسبه را بزنید.");
+};
+
+useGram.onclick = function () {
+    var v = Number(useGram.dataset.value);
+    if (!isFinite(v) || v <= 0) return;
+    var p = $("price");
+    if (p) {
+        p.value = Math.round(v).toLocaleString("en-US");
+        if (typeof saveData === "function") { try { saveData(); } catch (e) {} }
+        try { p.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+    }
+    toast("نرخ لحظه‌ای گرم در فاکتور وارد شد؛ محاسبه کنید.");
 };
 
 refreshBtn.onclick = function () { refreshAll(false); };

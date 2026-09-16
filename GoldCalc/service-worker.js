@@ -3,7 +3,7 @@
    اجرای آفلاین + نصب روی موبایل (PWA)
 ========================================================== */
 
-const SW_VERSION = "v2.5.0";
+const SW_VERSION = "v2.6.0";
 const CORE_CACHE = "amin-gold-core-" + SW_VERSION;
 const API_CACHE = "amin-gold-api-" + SW_VERSION;
 
