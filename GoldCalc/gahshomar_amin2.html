@@ -170,6 +170,33 @@ button{
 button:hover{filter:brightness(1.08)}
 button:active{transform:translateY(1px)}
 
+.mode-switch{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin:0 0 18px
+}
+
+.mode-btn{
+    margin-top:0;
+    background:rgba(255,255,255,.06);
+    color:#c9bd9f;
+    border:1px solid rgba(212,175,55,.4);
+    box-shadow:none;
+    text-shadow:none;
+    font-weight:bold;
+    padding:12px;
+    border-radius:11px;
+    cursor:pointer
+}
+
+.mode-btn.active{
+    background:linear-gradient(180deg,#f2d184,#cf9c33 55%,#a87b1f);
+    color:#241a05;
+    border-color:#8a6a1d;
+    box-shadow:0 6px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5)
+}
+
 .results{display:none}
 
 .result-grid{
@@ -656,9 +683,14 @@ button:active{transform:translateY(1px)}
 
 <h1>محاسبه سن و تبدیل تاریخ</h1>
 
-<p class="subtitle">
+<p class="subtitle" id="calcSubtitle">
 تاریخ تولد را به شمسی یا میلادی وارد کنید؛ برنامه تاریخ معادل و سن دقیق شما را محاسبه می‌کند.
 </p>
+
+<div class="mode-switch">
+<button type="button" id="modeAge" class="mode-btn active">🎂 محاسبه سن</button>
+<button type="button" id="modeConvert" class="mode-btn">🔄 تبدیل تاریخ</button>
+</div>
 
 <div class="row">
 
@@ -671,7 +703,7 @@ button:active{transform:translateY(1px)}
 </div>
 
 <div>
-<label for="birthDate">تاریخ تولد</label>
+<label for="birthDate" id="birthDateLabel">تاریخ تولد</label>
 <input
 id="birthDate"
 type="text"
@@ -805,7 +837,75 @@ enterkeyhint="done">
 </div>
 
 
-<div class="card">
+<div id="convertResults" class="card results">
+
+<div class="result-grid">
+
+<div class="result age">
+
+<div class="title">فاصلهٔ زمانی تا امروز</div>
+
+<div id="cvDays" class="days"></div>
+
+<div id="cvEquiv" class="extra-value"></div>
+
+</div>
+
+
+<div class="result full">
+
+<div class="title">تاریخ مورد نظر شمسی</div>
+
+<div id="cvJalali" class="value"></div>
+
+<div id="cvJalaliNum" class="extra-value"></div>
+
+</div>
+
+
+<div class="result full">
+
+<div class="title">تاریخ مورد نظر میلادی</div>
+
+<div id="cvGreg" class="value" dir="ltr"></div>
+
+<div id="cvGregNum" class="extra-value" dir="ltr"></div>
+
+</div>
+
+
+<div class="result full">
+
+<div class="title">سال کبیسه</div>
+
+<div id="cvLeap" class="extra-value"></div>
+
+</div>
+
+
+<div class="result">
+
+<div class="title today1">امروز شمسی</div>
+
+<div id="cvTodayJ" class="value"></div>
+
+</div>
+
+
+<div class="result">
+
+<div class="title today2">امروز میلادی</div>
+
+<div id="cvTodayG" class="value" dir="ltr"></div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="card" id="cardSection">
 
 <h2>دریافت کارت سن</h2>
 
@@ -831,7 +931,7 @@ autocomplete="off">
 </div>
 
 
-<div class="card">
+<div class="card" id="reminderSection">
 
 <div class="section-head">
 
@@ -852,7 +952,7 @@ autocomplete="off">
 </div>
 
 
-<div class="card">
+<div class="card" id="archiveSection">
 
 <div class="section-head">
 
@@ -2039,6 +2139,198 @@ ${escapeHtml(r.animalYear?.name||"")}
 
 
 /* =========================================================
+   حالت برنامه: محاسبه سن / تبدیل تاریخ
+========================================================= */
+
+let appMode="age";
+
+function setMode(m){
+
+    appMode=m;
+
+    const convert=m==="convert";
+
+    document
+    .getElementById("modeAge")
+    .classList.toggle("active",!convert);
+
+    document
+    .getElementById("modeConvert")
+    .classList.toggle("active",convert);
+
+    document
+    .getElementById("birthDateLabel")
+    .textContent=convert?"تاریخ مورد نظر":"تاریخ تولد";
+
+    document
+    .getElementById("birthDate")
+    .placeholder=convert?"مثلاً 1406/06/26":"مثلاً 1379/05/28";
+
+    document
+    .getElementById("calcSubtitle")
+    .textContent=convert
+        ?"تاریخ دلخواه (گذشته یا آینده) را به شمسی یا میلادی وارد کنید؛ معادل هر دو تقویم و فاصلهٔ زمانی تا امروز نمایش داده می‌شود."
+        :"تاریخ تولد را به شمسی یا میلادی وارد کنید؛ برنامه تاریخ معادل و سن دقیق شما را محاسبه می‌کند.";
+
+    document
+    .getElementById("cardSection")
+    .style.display=convert?"none":"";
+
+    document
+    .getElementById("reminderSection")
+    .style.display=convert?"none":"";
+
+    document
+    .getElementById("archiveSection")
+    .style.display=convert?"none":"";
+
+    document
+    .getElementById("results")
+    .style.display="none";
+
+    document
+    .getElementById("convertResults")
+    .style.display="none";
+
+    document
+    .getElementById("error")
+    .style.display="none";
+}
+
+document
+.getElementById("modeAge")
+.addEventListener("click",()=>setMode("age"));
+
+document
+.getElementById("modeConvert")
+.addEventListener("click",()=>setMode("convert"));
+
+
+/* =========================================================
+   تبدیل تاریخ (گذشته یا آینده)
+========================================================= */
+
+function runConversion(target,today,type){
+
+    document
+    .getElementById("results")
+    .style.display="none";
+
+    const diff=
+        totalDaysBetween(target,today);
+
+    const abs=Math.abs(diff);
+
+    document
+    .getElementById("cvDays")
+    .textContent=
+        diff>0?`${fmt(abs)} روز گذشته`:
+        diff<0?`${fmt(abs)} روز آینده`:
+        "تاریخ مورد نظر، امروز است 🎉";
+
+    const p=
+        target>=today
+            ?ageParts(today,target)
+            :ageParts(target,today);
+
+    const eq=[];
+    if(p.years) eq.push(`${fmt(p.years)} سال`);
+    if(p.months) eq.push(`${fmt(p.months)} ماه`);
+    if(p.days||!eq.length) eq.push(`${fmt(p.days)} روز`);
+
+    document
+    .getElementById("cvEquiv")
+    .textContent=`معادل ${eq.join(" و ")} شمسی`;
+
+    const tj=
+        gregorianToJalali(
+            target.getUTCFullYear(),
+            target.getUTCMonth()+1,
+            target.getUTCDate()
+        );
+
+    document
+    .getElementById("cvJalali")
+    .textContent=jstrBirth(target);
+
+    document
+    .getElementById("cvJalaliNum")
+    .textContent=
+        `${fmtDate(tj[2])}/${String(tj[1]).padStart(2,"0")}/${fmtDate(tj[0])}`;
+
+    const gy=target.getUTCFullYear();
+    const gm=target.getUTCMonth()+1;
+    const gd=target.getUTCDate();
+
+    document
+    .getElementById("cvGreg")
+    .textContent=
+        `${weekdaysEn[target.getUTCDay()]}, `+
+        `${fmtDate(gd)} ${gregorianMonths[gm-1]} ${fmtDate(gy)}`;
+
+    document
+    .getElementById("cvGregNum")
+    .textContent=
+        `${fmtDate(gd)}/${String(gm).padStart(2,"0")}/${fmtDate(gy)}`;
+
+    /* وضعیت کبیسهٔ سال ورودی و معادل آن */
+
+    const jy=tj[0];
+
+    let leapText="";
+
+    if(type==="jalali"){
+
+        leapText=
+            isJalaliLeap(jy)
+                ?`سال ${fmtDate(jy)} شمسی کبیسه است ✅`
+                :isGregorianLeap(jy+621)
+                    ?`سال ${fmtDate(jy)} شمسی کبیسه نیست؛ ولی سال ${fmtDate(jy+621)} میلادی کبیسه است ✅`
+                    :`سال ${fmtDate(jy)} شمسی کبیسه نیست (سال ${fmtDate(jy+621)} میلادی نیز کبیسه نیست)`;
+
+    }else{
+
+        let eqLeap=false;
+
+        try{
+            eqLeap=isJalaliLeap(gy-621);
+        }catch(e){
+            eqLeap=false;
+        }
+
+        leapText=
+            isGregorianLeap(gy)
+                ?`سال ${fmtDate(gy)} میلادی کبیسه است ✅`
+                :eqLeap
+                    ?`سال ${fmtDate(gy)} میلادی کبیسه نیست؛ ولی سال ${fmtDate(gy-621)} شمسی کبیسه است ✅`
+                    :`سال ${fmtDate(gy)} میلادی کبیسه نیست (سال ${fmtDate(gy-621)} شمسی نیز کبیسه نیست)`;
+    }
+
+    document
+    .getElementById("cvLeap")
+    .textContent=leapText;
+
+    document
+    .getElementById("cvTodayJ")
+    .textContent=jstr(today);
+
+    document
+    .getElementById("cvTodayG")
+    .textContent=gstr(today);
+
+    const box=
+        document.getElementById("convertResults");
+
+    box.style.display="block";
+
+    box.scrollIntoView({
+        behavior:"smooth",
+        block:"start"
+    });
+}
+
+
+/* =========================================================
    محاسبه
 ========================================================= */
 
@@ -2080,6 +2372,13 @@ document
                 now.getMonth()+1,
                 now.getDate()
             );
+
+        if(appMode==="convert"){
+
+            runConversion(birth,today,type);
+
+            return;
+        }
 
         if(birth>today){
 
@@ -2334,6 +2633,10 @@ document
         err.style.display="block";
 
         results.style.display="none";
+
+        document
+        .getElementById("convertResults")
+        .style.display="none";
 
         resetOnThisDay();
     }
@@ -3645,5 +3948,5 @@ initTicker();
 
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3bfa5705f4c8dbc',t:'MTc4OTU1OTM0OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3c20a923e2b720a',t:'MTc4OTU4NDQ2Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
