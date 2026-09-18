@@ -364,6 +364,27 @@ button:active{transform:translateY(1px)}
     border-color:rgba(240,199,94,.6)
 }
 
+.reminder.tomorrow{
+    background:rgba(240,199,94,.10);
+    border-color:rgba(240,199,94,.75);
+    animation:reminderGlow 1.6s ease-in-out infinite
+}
+
+@keyframes reminderGlow{
+    0%,100%{
+        box-shadow:0 0 0 0 rgba(240,199,94,0);
+        background:rgba(240,199,94,.08)
+    }
+    50%{
+        box-shadow:0 0 24px 5px rgba(240,199,94,.5);
+        background:rgba(240,199,94,.2)
+    }
+}
+
+@media (prefers-reduced-motion:reduce){
+    .reminder.tomorrow{animation:none}
+}
+
 .item-top{
     display:flex;
     justify-content:space-between;
@@ -963,6 +984,8 @@ autocomplete="off">
 <div class="small-note">
 
 اطلاعات در همین مرورگر ذخیره می‌شود و با بستن صفحه از بین نمی‌رود.
+<br>
+افراد بر اساس حروف الفبای نام مرتب می‌شوند.
 
 <span id="archiveCount" class="badge">۰ نفر</span>
 
@@ -1989,13 +2012,24 @@ data-id="${escapeHtml(r.id)}">
 
 `).join("");
 
-    list
+        list
         .querySelectorAll(".delete-one")
         .forEach(btn=>{
 
             btn.addEventListener(
                 "click",
                 ()=>{
+
+                    const rec=
+                        getArchive().find(
+                            x=>x.id===btn.dataset.id
+                        );
+
+                    if(
+                        !confirm(
+                            `آیا مطمئن هستید که «${rec?rec.name:"این شخص"}» از آرشیو حذف شود؟ این کار قابل بازگشت نیست.`
+                        )
+                    ) return;
 
                     saveArchive(
                         getArchive().filter(
@@ -2081,7 +2115,8 @@ function renderReminders(){
                 ...r,
                 nextDate:bd,
                 days:totalDaysBetween(today,bd),
-                isToday:bd.getTime()===today.getTime()
+                isToday:bd.getTime()===today.getTime(),
+                isTomorrow:totalDaysBetween(today,bd)===1
             };
 
         })
@@ -2091,19 +2126,23 @@ function renderReminders(){
     list.innerHTML=
         items.map(r=>`
 
-<div class="reminder ${r.isToday?"today":""}">
+<div class="reminder ${r.isToday?"today":r.isTomorrow?"tomorrow":""}">
 
 <div class="item-name">
 
 ${r.isToday
     ?"🎉 امروز تولد "
-    :"🎂 تولد "}
+    :r.isTomorrow
+        ?"🎈 فردا تولد "
+        :"🎂 تولد "}
 
 ${escapeHtml(r.name)}
 
 ${r.isToday
     ?" است!"
-    :" در پیش است"}
+    :r.isTomorrow
+        ?" است!"
+        :" در پیش است"}
 
 </div>
 
@@ -2111,7 +2150,9 @@ ${r.isToday
 
 ${r.isToday
     ?"امروز"
-    :"در "+fmt(r.days)+" روز دیگر"}
+    :r.isTomorrow
+        ?"فردا"
+        :"در "+fmt(r.days)+" روز دیگر"}
 
 —
 ${escapeHtml(jstrBirth(r.nextDate))}
@@ -3751,11 +3792,23 @@ function otdCacheSet(k,v){
     }catch(e){}
 }
 
-function parseFaWikitextBirths(wt){
+function cachedOtd(key,fn){
+    const c=otdCacheGet(key);
+    if(c!==undefined) return Promise.resolve(c);
+    return (async()=>{
+        try{
+            const r=await fn();
+            otdCacheSet(key,r);
+            return r;
+        }catch(e){
+            return null;
+        }
+    })();
+}
+
+function parseFaWikitextSection(wt,headingRe){
     const lines=String(wt).split(/\r?\n/);
-    const start=lines.findIndex(l=>
-        /^={2,}\s*(زادروزها?|متولد(?:ین|ان)|زادگان)\s*=*\s*$/.test(l.trim())
-    );
+    const start=lines.findIndex(l=>headingRe.test(l.trim()));
     if(start<0) return [];
     const out=[];
     for(let i=start+1;i<lines.length;i++){
@@ -3779,6 +3832,20 @@ function parseFaWikitextBirths(wt){
         if(t.length>=3&&t.length<=300) out.push(t);
     }
     return out;
+}
+
+function parseFaWikitextBirths(wt){
+    return parseFaWikitextSection(
+        wt,
+        /^={2,}\s*(زادروزها?|متولد(?:ین|ان)|زادگان)\s*=*\s*$/
+    );
+}
+
+function parseFaWikitextEvents(wt){
+    return parseFaWikitextSection(
+        wt,
+        /^={2,}\s*(رویدادها?|وقایع|حوادث)\s*=*\s*$/
+    );
 }
 
 async function fetchFaDayBirths(jm,jd){
@@ -3808,6 +3875,33 @@ async function fetchEnDayBirths(gm,gd){
         .filter(b=>b.text);
 }
 
+async function fetchFaDayEvents(jm,jd){
+    const title=`${toPersianDigits(jd)} ${jalaliMonths[jm-1]}`;
+    const url=
+        "https://fa.wikipedia.org/w/api.php?action=parse&prop=wikitext"+
+        "&format=json&formatversion=2&redirects=1&origin=*"+
+        "&page="+encodeURIComponent(title);
+    const json=await fetchJsonTimeout(url);
+    if(json&&json.parse&&typeof json.parse.wikitext==="string"){
+        return parseFaWikitextEvents(json.parse.wikitext);
+    }
+    return [];
+}
+
+async function fetchEnDayEvents(gm,gd){
+    const mm=String(gm).padStart(2,"0");
+    const dd=String(gd).padStart(2,"0");
+    const url=`https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${mm}/${dd}`;
+    const json=await fetchJsonTimeout(url);
+    const list=(json&&Array.isArray(json.events))?json.events:[];
+    return list
+        .map(e=>({
+            year:Number(e.year)||0,
+            text:String(e.text||"").trim()
+        }))
+        .filter(e=>e.text);
+}
+
 function otdLoadingHtml(){
     return `<div class="otd-status otd-loading">
 <span class="otd-spinner"></span>
@@ -3815,7 +3909,7 @@ function otdLoadingHtml(){
 </div>`;
 }
 
-function renderOnThisDay(box,faItems,enItems,j,gm,gd){
+function renderOnThisDay(box,faItems,enItems,faEvents,enEvents,j,gm,gd){
     if(faItems===null&&enItems===null){
         box.innerHTML=`<div class="otd-status otd-error">
 ⚠️ اتصال اینترنت برقرار نیست یا منابع آنلاین در دسترس نیستند.
@@ -3853,6 +3947,32 @@ ${enItems.length>MAX?`<div class="otd-more">و ${fmt(enItems.length-MAX)} مور
 </div>`);
     }
 
+    /* حوادث و اتفاقات مهم ایران و جهان */
+
+    const evList=[];
+
+    (faEvents||[])
+    .slice(0,5)
+    .forEach(t=>evList.push({fa:true,text:t}));
+
+    (enEvents||[])
+    .slice(0,Math.max(0,10-evList.length))
+    .forEach(e=>evList.push({fa:false,year:e.year,text:e.text}));
+
+    if(evList.length){
+        parts.push(`
+<div class="otd-group">
+<div class="otd-group-title">📜 حوادث و اتفاقات مهم ایران و جهان</div>
+<ul class="otd-list">
+${evList.map(e=>
+    e.fa
+        ?`<li>🇮🇷 ${escapeHtml(e.text)}</li>`
+        :`<li dir="ltr">${e.year?`<span class="otd-year">${e.year}</span>`:""} 🌍 ${escapeHtml(e.text)}</li>`
+).join("")}
+</ul>
+</div>`);
+    }
+
     if(!parts.length){
         box.innerHTML=`<div class="otd-status otd-empty">
 برای این روز، متولد مشهوری در منابع آنلاین پیدا نشد.
@@ -3879,37 +3999,15 @@ async function loadOnThisDay(birth){
 
     box.innerHTML=otdLoadingHtml();
 
-    const faKey=`fa:${j[1]}:${j[2]}`;
-    const enKey=`en:${gm}:${gd}`;
-    const faCached=otdCacheGet(faKey);
-    const enCached=otdCacheGet(enKey);
+    const [faItems,enItems,faEvents,enEvents]=
+        await Promise.all([
+            cachedOtd(`fa:${j[1]}:${j[2]}`,()=>fetchFaDayBirths(j[1],j[2])),
+            cachedOtd(`en:${gm}:${gd}`,()=>fetchEnDayBirths(gm,gd)),
+            cachedOtd(`faev:${j[1]}:${j[2]}`,()=>fetchFaDayEvents(j[1],j[2])),
+            cachedOtd(`enev:${gm}:${gd}`,()=>fetchEnDayEvents(gm,gd))
+        ]);
 
-    const [faItems,enItems]=await Promise.all([
-        faCached!==undefined
-            ?Promise.resolve(faCached)
-            :(async()=>{
-                try{
-                    const r=await fetchFaDayBirths(j[1],j[2]);
-                    otdCacheSet(faKey,r);
-                    return r;
-                }catch(e){
-                    return null;
-                }
-            })(),
-        enCached!==undefined
-            ?Promise.resolve(enCached)
-            :(async()=>{
-                try{
-                    const r=await fetchEnDayBirths(gm,gd);
-                    otdCacheSet(enKey,r);
-                    return r;
-                }catch(e){
-                    return null;
-                }
-            })()
-    ]);
-
-    renderOnThisDay(box,faItems,enItems,j,gm,gd);
+    renderOnThisDay(box,faItems,enItems,faEvents,enEvents,j,gm,gd);
 }
 
 function resetOnThisDay(){
@@ -3948,5 +4046,5 @@ initTicker();
 
 </script>
 
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3c20a923e2b720a',t:'MTc4OTU4NDQ2Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
