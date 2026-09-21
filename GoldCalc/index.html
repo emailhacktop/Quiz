@@ -31,7 +31,7 @@ content="width=device-width,initial-scale=1,maximum-scale=1">
 /* ==========================================================
    Amin System Gold Calculator
    Style.css
-   Version 2.6
+   Version 2.7
 ========================================================== */
 
 :root{
@@ -1154,7 +1154,7 @@ button{
     z-index: 10;
 }
 /* ==========================================================
-   مظنه بازار (نسخه 2.6)
+   مظنه بازار (نسخه 2.7)
    استایل بخش نمایش زنده انس جهانی و دلار — Amin System
 ========================================================== */
 
@@ -2149,7 +2149,7 @@ body.light footer{
 }
 
 /* ==========================================================
-   قیمت لحظه‌ای گرم طلا — بالای صفحه (v2.6)
+   قیمت لحظه‌ای گرم طلا — بالای صفحه (v2.7)
 ========================================================== */
 
 .gram-hero{
@@ -2211,6 +2211,39 @@ body.light .gram-hero-sub{
     color:#777;
 }
 
+.gram-date{
+    font-size:13px;
+    color:#d8c078;
+    margin-top:6px;
+}
+
+.vat-notice{
+    background:rgba(212,175,55,.08);
+    border:1px solid rgba(212,175,55,.35);
+    border-radius:14px;
+    padding:12px 16px;
+    margin-bottom:20px;
+    text-align:center;
+    font-size:13.5px;
+    line-height:2;
+    color:#e8d9a8;
+    animation:fadeUp .8s;
+}
+
+.vat-notice p{
+    margin:0;
+}
+
+body.light .gram-date{
+    color:#8a6d1b;
+}
+
+body.light .vat-notice{
+    background:#fff8e6;
+    border-color:#e3cfa0;
+    color:#6b5518;
+}
+
 body.light .gram-hero-price{
     color:#222;
     text-shadow:none;
@@ -2258,9 +2291,15 @@ body.light .gram-hero-price{
         <span class="live-dot" id="gramDot"></span>
     </div>
     <div class="gram-hero-sub">طلای ۱۸ عیار • تومان</div>
+    <div class="gram-date" id="todayDate"></div>
     <div class="gram-hero-price" id="gramLive" aria-live="polite">…</div>
     <div class="market-meta"><span id="gramSrc">—</span></div>
     <button type="button" class="use-btn gram-use" id="useGram" disabled>⬅ استفاده در فاکتور</button>
+</div>
+
+<div class="vat-notice">
+    <p>طبق بند ب ماده 26 قانون ارزش افزوده اصل طلا معاف از مالیات بوده.</p>
+    <p>از 13 دی 1400 مالیات فقط روی اجرت و سود فروشنده حساب میشود.</p>
 </div>
 
 <div class="card">
@@ -2303,13 +2342,15 @@ body.light .gram-hero-price{
 
 <div class="group">
 
-<label class="color-title" style="color:#d4af37; font-weight:bold;">نوع محاسبه</label>
+<label class="color-title" style="color:#d4af37; font-weight:bold;">نوع محاسبه (خرید / فروش)</label>
 
 <select id="calcType">
 
-<option value="melted">طلای آب‌شده</option>
+<option value="melted">خرید طلای آب‌شده و (دسته دوم)</option>
 
-<option value="jewelry">مصنوعات طلا</option>
+<option value="jewelry">خرید مصنوعات طلا</option>
+
+<option value="sell">فروش طلای دسته دوم</option>
 
 </select>
 
@@ -2480,6 +2521,11 @@ placeholder="09xxxxxxxxx">
     <b id="pureGold">0</b>
 </div>
 
+<div class="row">
+    <span>وزن طلای خالص 18 عیار</span>
+    <b id="pureGold18">0</b>
+</div>
+
 <div class="row total">
     <span>قیمت نهایی</span>
     <b id="finalPrice">0</b>
@@ -2626,6 +2672,10 @@ placeholder="09xxxxxxxxx">
 
 <li>📡 مظنه بازار: نمایش زنده انس جهانی، دلار و گرم طلا (نیاز به اینترنت دارد)</li>
 
+<li>⚖️ نوع محاسبه (خرید / فروش): «خرید طلای آب‌شده و (دسته دوم)»، «خرید مصنوعات طلا» و «فروش طلای دسته دوم» (در حالت فروش، اجرت، سود و مالیات غیرفعال‌اند)</li>
+
+<li>⚖️ «وزن به عیار»: معادل وزنی عیار واردشده به طلای ۱۸ عیار — در کادر نتیجه و زیر فیلد عیار فاکتور</li>
+
 <li>🌙 تم روشن/تیره با دکمه بالای صفحه</li>
 
 <li>🖨 چاپ فاکتورِ مشاهده‌شده از دفتر یا جستجو</li>
@@ -2709,7 +2759,7 @@ placeholder="09xxxxxxxxx">
 
 <div>
 
-Version 2.6
+Version 2.7
 
 </div>
 
@@ -2812,7 +2862,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 <script>
 /* ==========================================
    Amin System Gold Calculator
-   Version 2.6
+   Version 2.7
 ========================================== */
 
 const weight = document.getElementById("weight");
@@ -2848,6 +2898,8 @@ const gramPrice=document.getElementById("gramPrice");
 const mesghalPrice=document.getElementById("mesghalPrice");
 
 const pureGold=document.getElementById("pureGold");
+
+const pureGold18=document.getElementById("pureGold18");
 
 const result = document.getElementById("result");
 
@@ -3145,6 +3197,34 @@ function validate(){
 
 }
 
+/* وزن معادل عیار واردشده به طلای ۱۸ عیار، کف تا ۳ رقم اعشار (v2.7) */
+function pure18Of(w, p){
+    var v = Math.floor(Number(w) * Number(p) / 750 * 1000) / 1000;
+    return (isFinite(v) && v > 0) ? v : 0;
+}
+
+/* برچسب فارسی نوع محاسبه (v2.7) */
+function calcTypeLabel(v){
+    if(v === "sell") return "فروش طلای دسته دوم";
+    if(v === "jewelry") return "خرید مصنوعات طلا";
+    return "خرید طلای آب‌شده و (دسته دوم)";
+}
+
+/* نگاشت برچسب ذخیره‌شده به مقدار، سازگار با فاکتورهای قدیمی (v2.7) */
+function calcTypeFromLabel(label){
+    if(label === "فروش طلای دسته دوم") return "sell";
+    if(label === "خرید مصنوعات طلا" || label === "مصنوعات طلا") return "jewelry";
+    return "melted";
+}
+
+/* متن «وزن به عیار» برای فاکتورهای ثبت‌شده (v2.7) */
+function pure18Text(rec){
+    var v = (rec && isFinite(Number(rec.pure18)) && Number(rec.pure18) > 0)
+        ? Number(rec.pure18)
+        : pure18Of(rec ? rec.weight : 0, rec ? rec.purity : 0);
+    return v > 0 ? formatNumberFa(v) + " گرم" : "—";
+}
+
 function updateMode(){
 
     if(calcType.value === "melted"){
@@ -3155,11 +3235,40 @@ function updateMode(){
 
         wage.value = 0;
 
+        profit.disabled = false;
+
+        tax.disabled = false;
+
         profitMode.value = "base";
 
         profitLabel.innerHTML = "سود فروشنده %";
 
         taxLabel.innerHTML = "مالیات روی سود %";
+
+    }
+
+
+    else if(calcType.value === "sell"){
+
+        wageLabel.innerHTML = "اجرت ساخت % (غیرفعال)";
+
+        wage.disabled = true;
+
+        wage.value = 0;
+
+        profitLabel.innerHTML = "سود فروشنده % (غیرفعال)";
+
+        profit.disabled = true;
+
+        profit.value = 0;
+
+        taxLabel.innerHTML = "مالیات % (غیرفعال)";
+
+        tax.disabled = true;
+
+        tax.value = 0;
+
+        profitMode.value = "base";
 
     }
 
@@ -3170,6 +3279,10 @@ function updateMode(){
         wageLabel.innerHTML = "اجرت ساخت %";
 
         wage.disabled = false;
+
+        profit.disabled = false;
+
+        tax.disabled = false;
 
 
         profitLabel.innerHTML = "سود فروشنده %";
@@ -3228,6 +3341,22 @@ if(calcType.value === "melted"){
 
 }
 
+else if(calcType.value === "sell"){
+
+    // فروش طلای دسته دوم: بدون اجرت، سود و مالیات
+
+    wageAmount = 0;
+
+    profitAmount = 0;
+
+    taxAmount = 0;
+
+
+    total = base;
+
+
+}
+
 else{
 
 
@@ -3266,6 +3395,8 @@ let mesghal = gram * 4.6083;
 // تبدیل طلا موجود به عیار 24 یا 750 عیار 18 به 24
 let pure=w*(p/1000);
 
+let pure18 = pure18Of(w, p);
+
 animateValue(basePrice, Math.round(base));
 animateValue(wagePrice, Math.round(wageAmount));
 animateValue(profitPrice, Math.round(profitAmount));
@@ -3276,6 +3407,11 @@ animateValue(mesghalPrice, Math.round(mesghal), "");
 
 pureGold.innerHTML =
 Number(pure).toLocaleString("fa-IR",{
+maximumFractionDigits:3
+}) + " گرم";
+
+pureGold18.innerHTML =
+Number(pure18).toLocaleString("fa-IR",{
 maximumFractionDigits:3
 }) + " گرم";
 
@@ -3295,7 +3431,8 @@ buildInvoice(
     taxAmount,
     gram,
     mesghal,
-    pure
+    pure,
+    pure18
 );
 
 };
@@ -3364,6 +3501,8 @@ clearBtn.onclick=function(){
 
     pureGold.innerHTML = "0";
 
+    pureGold18.innerHTML = "0";
+
     finalPrice.innerHTML = "0";
 
     refreshInvoiceNumber(); /* اگر ویرایش ناتمام بود، شماره آزاد شود (v2.4) */
@@ -3425,7 +3564,8 @@ function buildInvoice(
     taxAmount,
     gram,
     mesghal,
-    pure
+    pure,
+    pure18
 ){
 
 const now = new Date();
@@ -3465,7 +3605,7 @@ invoiceBody.innerHTML = `
 
 <tr>
 <td>نوع محاسبه</td>
-<td>${calcType.value=="melted" ? "طلای آب‌شده" : "مصنوعات طلا"}</td>
+<td>${calcTypeLabel(calcType.value)}</td>
 </tr>
 
 <tr>
@@ -3476,6 +3616,11 @@ invoiceBody.innerHTML = `
 <tr>
 <td>عیار</td>
 <td>${esc(purity.value)}</td>
+</tr>
+
+<tr>
+<td>وزن به عیار</td>
+<td>${formatNumberFa(pure18)} گرم</td>
 </tr>
 
 <tr>
@@ -3562,15 +3707,13 @@ saveInvoice.onclick = function(){
         phone: customerPhone.value || "-",
 
         type:
-        calcType.value=="melted"
-        ?
-        "طلای آب شده"
-        :
-        "مصنوعات طلا",
+        calcTypeLabel(calcType.value),
 
         weight: weight.value,
 
         purity: purity.value,
+
+        pure18: pure18Of(weight.value, purity.value),
 
         price: unformat(price.value),
 
@@ -4201,6 +4344,11 @@ searchInvoiceBtn.onclick=function(){
 </tr>
 
 <tr>
+<td>وزن به عیار</td>
+<td>${pure18Text(invoiceFound)}</td>
+</tr>
+
+<tr>
 <td>قیمت روز</td>
 <td>${formatNumberFa(invoiceFound.price)} تومان</td>
 </tr>
@@ -4391,6 +4539,11 @@ function viewInvoice(number){
 </tr>
 
 <tr>
+<td>وزن به عیار</td>
+<td>${pure18Text(item)}</td>
+</tr>
+
+<tr>
 <td>قیمت روز</td>
 <td>${formatNumberFa(item.price)} تومان</td>
 </tr>
@@ -4526,11 +4679,7 @@ customerName.value = item.name;
 customerPhone.value = item.phone;
 
 calcType.value =
-item.type=="طلای آب شده"
-?
-"melted"
-:
-"jewelry";
+calcTypeFromLabel(item.type);
 
 updateMode();
 
@@ -4640,7 +4789,7 @@ document.addEventListener("keydown",function(e){
 ========================================*/
 
 console.log(
-"Amin System Gold Calculator v2.6"
+"Amin System Gold Calculator v2.7"
 );
 </script>
 
@@ -4689,7 +4838,7 @@ Math.round(gold18).toLocaleString("fa-IR") +
 <script>
 /* ==========================================================
    مظنه بازار — دریافت زنده انس جهانی و دلار از اینترنت
-   Amin System Gold Calculator v2.6
+   Amin System Gold Calculator v2.7
    توجه: این ماژول فقط «نمایش» می‌دهد و هیچ فرمولی را
    تغییر نمی‌دهد. ملاک محاسبه همان ورودی‌های دستی است.
 ========================================================== */
@@ -4711,6 +4860,16 @@ var useOunce = $("useOunce"), useUsd = $("useUsd");
 var marketDot = $("marketDot"), marketStatus = $("marketStatus");
 var refreshBtn = $("refreshMarket");
 var gramLive = $("gramLive"), gramSrc = $("gramSrc"), useGram = $("useGram"), gramDot = $("gramDot");
+
+/* تاریخ امروز شمسی در کادر قیمت لحظه‌ای (v2.7) */
+var todayDateEl = $("todayDate");
+if (todayDateEl) {
+    try {
+        var _dp = new Intl.DateTimeFormat("fa-IR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).formatToParts(new Date());
+        var _g = function (tp) { for (var i = 0; i < _dp.length; i++) { if (_dp[i].type === tp) return _dp[i].value; } return ""; };
+        todayDateEl.textContent = "امروز: " + _g("weekday") + " " + _g("day") + " " + _g("month") + " " + _g("year");
+    } catch (e) { todayDateEl.textContent = ""; }
+}
 
 /* اگر به هر دلیل المان‌ها در صفحه نبودند، بی‌سروصدا خارج شو */
 if (!ounceLive || !usdLive || !gramLive || !marketStatus) return;
