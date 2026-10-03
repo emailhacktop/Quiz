@@ -19,7 +19,7 @@ content="width=device-width,initial-scale=1,maximum-scale=1">
 /* ==========================================================
    Amin System Gold Calculator
    Style.css
-   Version 2.7
+   Version 2.9
 ========================================================== */
 
 :root{
@@ -1142,7 +1142,7 @@ button{
     z-index: 10;
 }
 /* ==========================================================
-   مظنه بازار (نسخه 2.7)
+   مظنه بازار (نسخه 2.9)
    استایل بخش نمایش زنده انس جهانی و دلار — Amin System
 ========================================================== */
 
@@ -2137,7 +2137,7 @@ body.light footer{
 }
 
 /* ==========================================================
-   قیمت لحظه‌ای گرم طلا — بالای صفحه (v2.7)
+   قیمت لحظه‌ای گرم طلا — بالای صفحه (v2.9)
 ========================================================== */
 
 .gram-hero{
@@ -2230,6 +2230,32 @@ body.light .vat-notice{
     background:#fff8e6;
     border-color:#e3cfa0;
     color:#6b5518;
+}
+
+.trade-memory{
+    background:rgba(212,175,55,.08);
+    border:1px solid rgba(212,175,55,.35);
+    border-radius:20px;
+    padding:16px 18px;
+    margin:18px 0 20px;
+    animation:fadeUp .8s;
+}
+
+.trade-memory-title{
+    text-align:center;
+    font-size:16px;
+    font-weight:900;
+    color:var(--gold2);
+    margin-bottom:6px;
+}
+
+body.light .trade-memory{
+    background:#fff8e6;
+    border-color:#e3cfa0;
+}
+
+body.light .trade-memory-title{
+    color:#8a6d1b;
 }
 
 body.light .gram-hero-price{
@@ -2433,6 +2459,44 @@ placeholder="09xxxxxxxxx">
 پاک کردن
 
 </button>
+
+</div>
+
+</div>
+
+<div class="trade-memory" id="tradeMemory">
+
+<div class="trade-memory-title">⚖️ حافظه معاملات</div>
+
+<div class="row">
+
+<span>۱. خرید طلا دسته دوم</span>
+
+<b id="memBuy2nd">۰ تومان</b>
+
+</div>
+
+<div class="row">
+
+<span>۲. خرید طلا نو</span>
+
+<b id="memBuyNew">۰ تومان</b>
+
+</div>
+
+<div class="row">
+
+<span>۳. فروش طلا خودم</span>
+
+<b id="memSell">۰ تومان</b>
+
+</div>
+
+<div class="row total">
+
+<span>مابه‌التفاوت</span>
+
+<b id="memDiff">۰ تومان</b>
 
 </div>
 
@@ -2664,6 +2728,8 @@ placeholder="09xxxxxxxxx">
 
 <li>⚖️ «وزن به عیار»: معادل وزنی عیار واردشده به طلای ۱۸ عیار — در کادر نتیجه و زیر فیلد عیار فاکتور</li>
 
+<li>⚖️ حافظه معاملات: قیمت نهایی هر محاسبه در خانه همان نوع (خرید دسته‌دوم / خرید نو / فروش) ذخیره می‌شود و مابه‌التفاوت طلبکار/بدهکار را نشان می‌دهد؛ با «پاک کردن» صفر می‌شود، در فاکتور و خروجی‌ها دخالتی ندارد و ثبت فاکتور آن را پاک نمی‌کند</li>
+
 <li>🌙 تم روشن/تیره با دکمه بالای صفحه</li>
 
 <li>🖨 چاپ فاکتورِ مشاهده‌شده از دفتر یا جستجو</li>
@@ -2747,7 +2813,7 @@ placeholder="09xxxxxxxxx">
 
 <div>
 
-Version 2.7
+Version 2.9
 
 </div>
 
@@ -2850,7 +2916,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 <script>
 /* ==========================================
    Amin System Gold Calculator
-   Version 2.7
+   Version 2.9
 ========================================== */
 
 const weight = document.getElementById("weight");
@@ -2888,6 +2954,14 @@ const mesghalPrice=document.getElementById("mesghalPrice");
 const pureGold=document.getElementById("pureGold");
 
 const pureGold18=document.getElementById("pureGold18");
+
+const memBuy2nd=document.getElementById("memBuy2nd");
+
+const memBuyNew=document.getElementById("memBuyNew");
+
+const memSell=document.getElementById("memSell");
+
+const memDiff=document.getElementById("memDiff");
 
 const result = document.getElementById("result");
 
@@ -2949,6 +3023,10 @@ function storeGet(key, fallback){
 }
 
 /* اثر ورودی‌ها برای تشخیص «محاسبه قدیمی» (جلوگیری از ثبت/چاپ اشتباه) */
+let tradeMem = { buy2nd: 0, buyNew: 0, sell: 0 }; /* حافظه معاملات (v2.8) */
+
+let preserveTradeMem = false; /* ثبت فاکتور حافظه را پاک نکند (v2.9) */
+
 let lastCalcSnapshot = null;
 
 let invoiceMode = null; /* calc | view | null (v2.5) */
@@ -3098,6 +3176,10 @@ loadData();
 
 updateMode();
 
+loadTradeMem();
+
+paintTradeMem();
+
 
 calcType.addEventListener("change",()=>{
 
@@ -3211,6 +3293,34 @@ function pure18Text(rec){
         ? Number(rec.pure18)
         : pure18Of(rec ? rec.weight : 0, rec ? rec.purity : 0);
     return v > 0 ? formatNumberFa(v) + " گرم" : "—";
+}
+
+/* توابع حافظه معاملات (v2.8) */
+function loadTradeMem(){
+    try{
+        var m = JSON.parse(localStorage.getItem("tradeMemory") || "{}");
+        ["buy2nd","buyNew","sell"].forEach(function(k){
+            var v = Number(m[k]);
+            tradeMem[k] = (isFinite(v) && v >= 0) ? v : 0;
+        });
+    }catch(e){
+        tradeMem = { buy2nd: 0, buyNew: 0, sell: 0 };
+    }
+}
+
+function saveTradeMem(){
+    try{
+        localStorage.setItem("tradeMemory", JSON.stringify(tradeMem));
+    }catch(e){}
+}
+
+function paintTradeMem(){
+    memBuy2nd.textContent = formatNumberFa(tradeMem.buy2nd) + " تومان";
+    memBuyNew.textContent = formatNumberFa(tradeMem.buyNew) + " تومان";
+    memSell.textContent = formatNumberFa(tradeMem.sell) + " تومان";
+    var d = (tradeMem.buy2nd + tradeMem.buyNew) - tradeMem.sell;
+    var label = d > 0 ? " بدهکار" : (d < 0 ? " طلبکار" : "");
+    memDiff.textContent = formatNumberFa(Math.abs(d)) + " تومان" + label;
 }
 
 function updateMode(){
@@ -3409,6 +3519,19 @@ saveData();
 
 showToast("محاسبه انجام شد");
 
+/* ذخیره قیمت نهایی در حافظه همان نوع محاسبه (v2.8) */
+if(calcType.value === "melted"){
+    tradeMem.buy2nd = Math.round(total);
+}else if(calcType.value === "jewelry"){
+    tradeMem.buyNew = Math.round(total);
+}else if(calcType.value === "sell"){
+    tradeMem.sell = Math.round(total);
+}
+
+saveTradeMem();
+
+paintTradeMem();
+
 lastCalcSnapshot = snapshotInputs(); /* اثر ورودی‌ها (v2.4) */
 
 buildInvoice(
@@ -3490,6 +3613,22 @@ clearBtn.onclick=function(){
     pureGold.innerHTML = "0";
 
     pureGold18.innerHTML = "0";
+
+    if(!preserveTradeMem){
+
+        tradeMem.buy2nd = 0;
+
+        tradeMem.buyNew = 0;
+
+        tradeMem.sell = 0;
+
+        saveTradeMem();
+
+        paintTradeMem();
+
+    }
+
+    preserveTradeMem = false;
 
     finalPrice.innerHTML = "0";
 
@@ -3730,6 +3869,8 @@ saveInvoice.onclick = function(){
 
     refreshInvoiceNumber();
  
+    preserveTradeMem = true;
+
     clearBtn.click();
 
     showToast(
@@ -4777,7 +4918,7 @@ document.addEventListener("keydown",function(e){
 ========================================*/
 
 console.log(
-"Amin System Gold Calculator v2.7"
+"Amin System Gold Calculator v2.9"
 );
 </script>
 
@@ -4826,7 +4967,7 @@ Math.round(gold18).toLocaleString("fa-IR") +
 <script>
 /* ==========================================================
    مظنه بازار — دریافت زنده انس جهانی و دلار از اینترنت
-   Amin System Gold Calculator v2.7
+   Amin System Gold Calculator v2.9
    توجه: این ماژول فقط «نمایش» می‌دهد و هیچ فرمولی را
    تغییر نمی‌دهد. ملاک محاسبه همان ورودی‌های دستی است.
 ========================================================== */
